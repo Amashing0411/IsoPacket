@@ -1,0 +1,6 @@
+{
+  "name": "IsoPacket - HD-2D Isometric Network Simulator",
+  "description": "An open-source, HD-2D isometric network topology simulator, homelab visualizer, and packet routing puzzle game.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
