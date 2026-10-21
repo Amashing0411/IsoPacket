@@ -13,6 +13,8 @@ import { PixelTextureFactory } from '../../assets/PixelTextureFactory';
 import { PlacedNode, CableConnection } from '../../engine/types';
 import { CatenaryCableSystem } from './CatenaryCableSystem';
 import { InstancedPacketSystem } from './InstancedPacketSystem';
+import { useScenarioStore } from '../../state/useScenarioStore';
+import { AudioManager } from '../../utils/AudioManager';
 
 // Pre-allocated reusable math objects to avoid GC in animation loop
 const _raycaster = new THREE.Raycaster();
@@ -90,11 +92,11 @@ export const IsometricViewport: React.FC = () => {
 
     // --- 1. Scene, Camera & Renderer Setup ---
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color('#0b0f17');
-    scene.fog = new THREE.Fog('#0b0f17', 55, 120);
+    scene.background = new THREE.Color('#0b111e');
+    scene.fog = new THREE.Fog('#0b111e', 180, 420);
 
     const aspect = container.clientWidth / container.clientHeight;
-    const frustumSize = 36;
+    const frustumSize = 58;
     const camera = new THREE.OrthographicCamera(
       (-frustumSize * aspect) / 2,
       (frustumSize * aspect) / 2,
@@ -105,7 +107,7 @@ export const IsometricViewport: React.FC = () => {
     );
 
     // Precise Isometric Camera Positioning
-    const isoDistance = 45;
+    const isoDistance = 70;
     camera.position.set(isoDistance, isoDistance * 0.95, isoDistance);
     const cameraTarget = new THREE.Vector3(0, 0, 0);
     const targetCameraPos = camera.position.clone();
@@ -122,9 +124,9 @@ export const IsometricViewport: React.FC = () => {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.15;
+    renderer.toneMappingExposure = 1.5;
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
 
     container.appendChild(renderer.domElement);
 
@@ -134,14 +136,17 @@ export const IsometricViewport: React.FC = () => {
     pmremGenerator.dispose();
 
     // --- 2. Lighting Rig ---
-    const dirLight = new THREE.DirectionalLight('#ffe8d6', 1.8);
-    dirLight.position.set(30, 45, 20);
+    const ambientLight = new THREE.AmbientLight('#e2e8f0', 1.4);
+    scene.add(ambientLight);
+
+    const dirLight = new THREE.DirectionalLight('#ffffff', 2.4);
+    dirLight.position.set(40, 65, 30);
     dirLight.castShadow = true;
     dirLight.shadow.mapSize.width = 2048;
     dirLight.shadow.mapSize.height = 2048;
     dirLight.shadow.camera.near = 0.5;
-    dirLight.shadow.camera.far = 120;
-    const shadowD = 24;
+    dirLight.shadow.camera.far = 160;
+    const shadowD = 40;
     dirLight.shadow.camera.left = -shadowD;
     dirLight.shadow.camera.right = shadowD;
     dirLight.shadow.camera.top = shadowD;
@@ -150,11 +155,11 @@ export const IsometricViewport: React.FC = () => {
     dirLight.shadow.normalBias = 0.02;
     scene.add(dirLight);
 
-    const hemiLight = new THREE.HemisphereLight('#38bdf8', '#0f172a', 0.65);
+    const hemiLight = new THREE.HemisphereLight('#7dd3fc', '#1e293b', 1.1);
     scene.add(hemiLight);
 
-    const rimLight = new THREE.DirectionalLight('#6366f1', 0.8);
-    rimLight.position.set(-30, 20, -30);
+    const rimLight = new THREE.DirectionalLight('#818cf8', 1.1);
+    rimLight.position.set(-40, 35, -40);
     scene.add(rimLight);
 
     // --- 3. Floor Grid Generation ---
@@ -190,9 +195,10 @@ export const IsometricViewport: React.FC = () => {
       for (let gx = 0; gx < GRID_SIZE; gx++) {
         const { x, z } = gridToWorld(gx, gz);
         let mat = floorMaterials.raised;
+        // Strict Hazard Borders: only border the absolute outer edges of the 32x32 grid
         if (gx === 0 || gx === GRID_SIZE - 1 || gz === 0 || gz === GRID_SIZE - 1) {
-          mat = (gx + gz) % 2 === 0 ? floorMaterials.hazard : floorMaterials.raised;
-        } else if ((gx % 4 === 0 && gz % 2 === 0) || (gz % 4 === 0 && gx % 2 === 0)) {
+          mat = floorMaterials.hazard;
+        } else if ((gx % 6 === 0 && gz % 3 === 0) || (gz % 6 === 0 && gx % 3 === 0)) {
           mat = floorMaterials.vent;
         }
 
@@ -366,6 +372,22 @@ export const IsometricViewport: React.FC = () => {
       wireMarker.name = 'wire_source_marker';
       wireMarker.visible = node.id === stateRef.current.wiringSourceNodeId;
       group.add(wireMarker);
+
+      // Wi-Fi 6 AP Coverage Radius Ring
+      if (node.type === 'ap') {
+        const apRingGeo = new THREE.RingGeometry(13.8, 14.1, 64);
+        apRingGeo.rotateX(-Math.PI / 2);
+        const apRingMat = new THREE.MeshBasicMaterial({
+          color: '#0ea5e9',
+          side: THREE.DoubleSide,
+          transparent: true,
+          opacity: 0.35,
+          depthWrite: false,
+        });
+        const apRing = new THREE.Mesh(apRingGeo, apRingMat);
+        apRing.position.y = 0.025;
+        group.add(apRing);
+      }
 
       return group;
     }
@@ -550,26 +572,31 @@ export const IsometricViewport: React.FC = () => {
       if (tool === 'select') {
         if (clickedNode) {
           setSelectedNodeId(clickedNode.id);
+          AudioManager.playClick(900);
         } else {
           setSelectedNodeId(null);
         }
       } else if (tool === 'delete') {
         if (clickedNode) {
           deleteNode(clickedNode.id);
+          AudioManager.playPacketDrop();
         }
       } else if (tool === 'move') {
         if (!stateRef.current.movingNodeId) {
           if (clickedNode) {
             stateRef.current.movingNodeId = clickedNode.id;
             setSelectedNodeId(clickedNode.id);
+            AudioManager.playClick(850);
           }
         } else {
           if (!clickedNode) {
             moveNode(stateRef.current.movingNodeId, gx, gz);
             stateRef.current.movingNodeId = null;
+            AudioManager.playClick(950);
           } else {
             stateRef.current.movingNodeId = clickedNode.id;
             setSelectedNodeId(clickedNode.id);
+            AudioManager.playClick(850);
           }
         }
       } else if (tool === 'wire') {
@@ -577,20 +604,20 @@ export const IsometricViewport: React.FC = () => {
         if (!stateRef.current.wiringSourceNodeId) {
           if (clickedNode) {
             setWiringSourceNodeId(clickedNode.id);
+            AudioManager.playClick(1000);
           }
         } else {
           if (clickedNode) {
             if (clickedNode.id !== stateRef.current.wiringSourceNodeId) {
               addCable(stateRef.current.wiringSourceNodeId, clickedNode.id);
               setWiringSourceNodeId(null);
+              AudioManager.playWireSnap();
               if (ghostTubeMesh) ghostTubeMesh.visible = false;
             } else {
-              // Clicked same node: cancel wiring
               setWiringSourceNodeId(null);
               if (ghostTubeMesh) ghostTubeMesh.visible = false;
             }
           } else {
-            // Clicked empty tile: cancel wiring
             setWiringSourceNodeId(null);
             if (ghostTubeMesh) ghostTubeMesh.visible = false;
           }
@@ -599,8 +626,10 @@ export const IsometricViewport: React.FC = () => {
         // Hardware placement tool
         if (!clickedNode) {
           addNode(tool, gx, gz);
+          AudioManager.playClick(1100);
         } else {
           setSelectedNodeId(clickedNode.id);
+          AudioManager.playClick(900);
         }
       }
     };
@@ -615,10 +644,52 @@ export const IsometricViewport: React.FC = () => {
       e.preventDefault();
     };
 
+    // Mobile Touch Pinch-To-Zoom & Touch Pan
+    const activeTouches = new Map<number, { x: number; y: number }>();
+    let initialPinchDist = 0;
+    let pinchStartZoom = 1.0;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        const t = e.changedTouches[i];
+        activeTouches.set(t.identifier, { x: t.clientX, y: t.clientY });
+      }
+      if (activeTouches.size === 2) {
+        const [t1, t2] = Array.from(activeTouches.values());
+        initialPinchDist = Math.hypot(t1.x - t2.x, t1.y - t2.y);
+        pinchStartZoom = targetZoom;
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        const t = e.changedTouches[i];
+        activeTouches.set(t.identifier, { x: t.clientX, y: t.clientY });
+      }
+      if (activeTouches.size === 2 && initialPinchDist > 0) {
+        const [t1, t2] = Array.from(activeTouches.values());
+        const currentDist = Math.hypot(t1.x - t2.x, t1.y - t2.y);
+        const factor = currentDist / initialPinchDist;
+        targetZoom = THREE.MathUtils.clamp(pinchStartZoom * factor, 0.45, 2.5);
+      }
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        activeTouches.delete(e.changedTouches[i].identifier);
+      }
+      if (activeTouches.size < 2) {
+        initialPinchDist = 0;
+      }
+    };
+
     const dom = renderer.domElement;
     dom.addEventListener('pointerdown', handlePointerDown);
     window.addEventListener('pointermove', handlePointerMove);
     window.addEventListener('pointerup', handlePointerUp);
+    dom.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd, { passive: true });
     dom.addEventListener('wheel', handleWheel, { passive: false });
     dom.addEventListener('contextmenu', handleContextMenu);
 
@@ -644,11 +715,13 @@ export const IsometricViewport: React.FC = () => {
     // --- 8. Render & Simulation Animation Loop (Zero GC) ---
     let animationFrameId: number;
     let statsTimer = 0;
-    const clock = new THREE.Clock();
+    let lastTime = performance.now();
 
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
-      const delta = Math.min(clock.getDelta(), 0.1);
+      const now = performance.now();
+      const delta = Math.min((now - lastTime) / 1000, 0.1);
+      lastTime = now;
 
       // Smooth camera position damping
       camera.position.x = THREE.MathUtils.damp(camera.position.x, targetCameraPos.x, 8, delta);
@@ -663,6 +736,7 @@ export const IsometricViewport: React.FC = () => {
       const simStore = useSimulationStore.getState();
       if (simStore.isPlaying) {
         globalSimulationEngine.tick(delta * simStore.speed);
+        useScenarioStore.getState().updateTickProgress(delta * simStore.speed);
       }
 
       // Sync stats to store at throttled intervals
@@ -723,6 +797,9 @@ export const IsometricViewport: React.FC = () => {
       dom.removeEventListener('pointerdown', handlePointerDown);
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUp);
+      dom.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
       dom.removeEventListener('wheel', handleWheel);
       dom.removeEventListener('contextmenu', handleContextMenu);
       resizeObserver.disconnect();

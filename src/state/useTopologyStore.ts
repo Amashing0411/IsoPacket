@@ -13,7 +13,7 @@ import {
   AclRule,
 } from '../engine/types';
 
-export const GRID_SIZE = 16;
+export const GRID_SIZE = 32;
 export const TILE_SIZE = 2.0; // World units per grid tile
 
 interface HoverTile {
@@ -53,6 +53,7 @@ interface TopologyState {
   deleteNode: (id: string) => void;
   updateNodeIp: (id: string, ip: string) => void;
   updateNodeName: (id: string, name: string) => void;
+  updateNodeVlan: (id: string, vlanId: number) => void;
   rotateNode: (id: string) => void;
   clearTopology: () => void;
   loadPresetHomelab: () => void;
@@ -164,7 +165,7 @@ function generateNode(type: HardwareNodeType, gridX: number, gridZ: number, cust
   const ports = Array.from({ length: def.defaultPorts }, (_, i) => ({
     id: `port_${id}_${i}`,
     name: i === 0 && (type === 'gateway' || type === 'router') ? 'wan0' : `eth${i}`,
-    type: (type === 'gateway' && i === 0 ? 'fiber' : 'copper') as 'copper' | 'fiber',
+    type: (type === 'gateway' && i === 0 ? 'fiber' : def.isWireless ? 'wireless' : 'copper') as 'copper' | 'fiber' | 'wireless',
     macAddress: `00:1A:2B:${Math.floor(Math.random() * 89 + 10).toString(16).toUpperCase()}:${Math.floor(Math.random() * 89 + 10).toString(16).toUpperCase()}:${Math.floor(Math.random() * 89 + 10).toString(16).toUpperCase()}`,
     ipAddress: i === 0 ? ip : undefined,
     subnetMask: '255.255.255.0',
@@ -183,16 +184,20 @@ function generateNode(type: HardwareNodeType, gridX: number, gridZ: number, cust
     ipAddress: ip,
     subnetMask: '255.255.255.0',
     gatewayIp: '10.0.0.1',
-    vlanId: type === 'database' ? 20 : type === 'server' ? 10 : 1,
+    vlanId: def.defaultVlan,
     ports,
-    cpuUsage: Math.floor(Math.random() * 35) + 12,
-    memoryUsage: Math.floor(Math.random() * 45) + 20,
+    cpuUsage: Math.floor(Math.random() * 25) + 10,
+    memoryUsage: Math.floor(Math.random() * 30) + 15,
     ingressMbps: Number((Math.random() * 8 + 2).toFixed(1)),
     egressMbps: Number((Math.random() * 7 + 2).toFixed(1)),
     droppedPackets: 0,
     queueLength: 0,
     aclRules: getDefaultAclRules(type),
     createdAt: Date.now(),
+    productivityScore: 100,
+    revenuePerSec: def.revenuePerSec,
+    hasGatewayRoute: true,
+    latencyMs: 1.2,
   };
 }
 
@@ -200,108 +205,125 @@ function createPresetTopology(): { nodes: PlacedNode[]; cables: CableConnection[
   nodeIdCounter = 1;
   cableIdCounter = 1;
 
-  const gw = generateNode('gateway', 3, 4, 'node_gateway_wan');
-  const fw = generateNode('firewall', 5, 4, 'node_firewall_ngfw');
-  const rtr = generateNode('router', 7, 4, 'node_router_core');
-  const sw = generateNode('switch', 9, 6, 'node_switch_l2');
-  const srv1 = generateNode('server', 11, 4, 'node_server_web1');
-  const srv2 = generateNode('server', 11, 6, 'node_server_web2');
-  const db = generateNode('database', 11, 8, 'node_db_primary');
-  const cli = generateNode('client', 5, 8, 'node_client_lan');
+  // Centered Cisco Enterprise Office & Automated Warehouse Layout on 32x32 Grid
+  const gw = generateNode('gateway', 11, 15, 'node_gateway_wan');
+  const fw = generateNode('firewall', 13, 15, 'node_firewall_ngfw');
+  const rtr = generateNode('router', 15, 15, 'node_router_core');
+  const sw = generateNode('switch', 17, 15, 'node_switch_catalyst');
+  const ap = generateNode('ap', 17, 12, 'node_ap_wifi6');
+  const srv1 = generateNode('server', 19, 14, 'node_server_web1');
+  const db = generateNode('database', 19, 16, 'node_db_primary');
+  const pc = generateNode('pc', 13, 12, 'node_pc_workstation');
+  const phone = generateNode('ipphone', 15, 12, 'node_phone_voip');
+  const robot = generateNode('robot', 21, 13, 'node_robot_agv');
+  const laptop = generateNode('laptop', 19, 11, 'node_laptop_exec');
 
-  const nodes = [gw, fw, rtr, sw, srv1, srv2, db, cli];
+  const nodes = [gw, fw, rtr, sw, ap, srv1, db, pc, phone, robot, laptop];
 
   const cables: CableConnection[] = [
     {
-      id: 'cable_1_gw_fw',
+      id: 'cable_gw_fw',
       fromNodeId: gw.id,
       fromPortId: gw.ports[0].id,
       toNodeId: fw.id,
       toPortId: fw.ports[0].id,
       cableType: 'fiber',
       bandwidthMbps: 10000,
-      currentThroughputMbps: 240,
+      currentThroughputMbps: 450,
       packetLossRate: 0,
       latencyMs: 1.2,
       color: '#eab308', // Fiber Yellow
     },
     {
-      id: 'cable_2_fw_rtr',
+      id: 'cable_fw_rtr',
       fromNodeId: fw.id,
       fromPortId: fw.ports[1].id,
       toNodeId: rtr.id,
       toPortId: rtr.ports[0].id,
       cableType: 'cat6',
-      bandwidthMbps: 1000,
-      currentThroughputMbps: 180,
+      bandwidthMbps: 10000,
+      currentThroughputMbps: 380,
       packetLossRate: 0,
       latencyMs: 0.8,
-      color: '#3b82f6', // Cat6 Blue
+      color: '#ef4444', // Security Firewall Red
     },
     {
-      id: 'cable_3_rtr_sw',
+      id: 'cable_rtr_sw',
       fromNodeId: rtr.id,
       fromPortId: rtr.ports[1].id,
       toNodeId: sw.id,
       toPortId: sw.ports[0].id,
       cableType: 'cat6',
       bandwidthMbps: 10000,
-      currentThroughputMbps: 350,
+      currentThroughputMbps: 650,
       packetLossRate: 0,
       latencyMs: 0.5,
-      color: '#3b82f6',
+      color: '#3b82f6', // Trunk Blue
     },
     {
-      id: 'cable_4_sw_srv1',
+      id: 'cable_sw_ap',
       fromNodeId: sw.id,
       fromPortId: sw.ports[1].id,
+      toNodeId: ap.id,
+      toPortId: ap.ports[0].id,
+      cableType: 'cat6',
+      bandwidthMbps: 2500,
+      currentThroughputMbps: 210,
+      packetLossRate: 0,
+      latencyMs: 0.6,
+      color: '#0ea5e9', // AP Sky Blue
+    },
+    {
+      id: 'cable_sw_srv1',
+      fromNodeId: sw.id,
+      fromPortId: sw.ports[2].id,
       toNodeId: srv1.id,
       toPortId: srv1.ports[0].id,
       cableType: 'cat6',
       bandwidthMbps: 1000,
-      currentThroughputMbps: 120,
+      currentThroughputMbps: 180,
       packetLossRate: 0,
       latencyMs: 0.4,
-      color: '#10b981', // Emerald DMZ
+      color: '#10b981', // Server Green
     },
     {
-      id: 'cable_5_sw_srv2',
-      fromNodeId: sw.id,
-      fromPortId: sw.ports[2].id,
-      toNodeId: srv2.id,
-      toPortId: srv2.ports[0].id,
-      cableType: 'cat6',
-      bandwidthMbps: 1000,
-      currentThroughputMbps: 95,
-      packetLossRate: 0,
-      latencyMs: 0.4,
-      color: '#10b981',
-    },
-    {
-      id: 'cable_6_sw_db',
+      id: 'cable_sw_db',
       fromNodeId: sw.id,
       fromPortId: sw.ports[3].id,
       toNodeId: db.id,
       toPortId: db.ports[0].id,
       cableType: 'management',
       bandwidthMbps: 10000,
-      currentThroughputMbps: 160,
+      currentThroughputMbps: 240,
       packetLossRate: 0,
       latencyMs: 0.3,
       color: '#a855f7', // DB Purple
     },
     {
-      id: 'cable_7_rtr_cli',
+      id: 'cable_rtr_pc',
       fromNodeId: rtr.id,
       fromPortId: rtr.ports[2].id,
-      toNodeId: cli.id,
-      toPortId: cli.ports[0].id,
+      toNodeId: pc.id,
+      toPortId: pc.ports[0].id,
       cableType: 'cat6',
       bandwidthMbps: 1000,
       currentThroughputMbps: 45,
       packetLossRate: 0,
-      latencyMs: 1.0,
-      color: '#06b6d4', // Client Cyan
+      latencyMs: 0.9,
+      color: '#38bdf8', // PC Cyan
+    },
+    {
+      id: 'cable_sw_phone',
+      fromNodeId: sw.id,
+      fromPortId: sw.ports[4].id,
+      toNodeId: phone.id,
+      toPortId: phone.ports[0].id,
+      cableType: 'cat6',
+      bandwidthMbps: 100,
+      currentThroughputMbps: 12,
+      packetLossRate: 0,
+      latencyMs: 0.5,
+      color: '#34d399', // Voice Green
     },
   ];
 
@@ -382,6 +404,14 @@ export const useTopologyStore = create<TopologyState>((set, get) => {
       set((state) => ({
         nodes: state.nodes.map((n) =>
           n.id === id ? { ...n, name } : n
+        ),
+      }));
+    },
+
+    updateNodeVlan: (id, vlanId) => {
+      set((state) => ({
+        nodes: state.nodes.map((n) =>
+          n.id === id ? { ...n, vlanId } : n
         ),
       }));
     },

@@ -560,6 +560,274 @@ class PixelTextureFactoryClass {
           }
         }
         break;
+
+      case 'pc':
+        // Modern Workstation PC: Monitor + Mini Tower
+        ctx.fillStyle = '#141822';
+        ctx.fillRect(px, py, pw, ph);
+
+        // Monitor frame & stand
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(px + 6, py + 8, pw - 34, 52);
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(px + 10, py + 12, pw - 42, 44);
+
+        // Screen code editor lines
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillRect(px + 14, py + 18, 28, 3);
+        ctx.fillStyle = '#10b981';
+        ctx.fillRect(px + 20, py + 24, 34, 3);
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(px + 20, py + 30, 22, 3);
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillRect(px + 14, py + 36, 30, 3);
+        ctx.fillStyle = '#a855f7';
+        ctx.fillRect(px + 14, py + 42, 18, 3);
+
+        // Stand base
+        ctx.fillStyle = '#475569';
+        ctx.fillRect(px + 26, py + 60, 16, 8);
+        ctx.fillRect(px + 20, py + 68, 28, 4);
+
+        // Mini Tower Case on right
+        ctx.fillStyle = '#1e293b';
+        ctx.fillRect(px + pw - 24, py + 14, 20, 68);
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(px + pw - 22, py + 18, 16, 12);
+        // Power button & USB
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillRect(px + pw - 16, py + 34, 4, 4);
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillRect(px + pw - 18, py + 42, 8, 2);
+        ctx.fillRect(px + pw - 18, py + 47, 8, 2);
+        break;
+
+      case 'laptop':
+        // Executive Laptop: Clamshell with keyboard and trackpad
+        ctx.fillStyle = '#181f2b';
+        ctx.fillRect(px, py, pw, ph);
+
+        // Open display lid
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(px + 8, py + 6, pw - 16, 46);
+        ctx.fillStyle = '#090d16';
+        ctx.fillRect(px + 12, py + 10, pw - 24, 38);
+
+        // Laptop screen UI dashboard
+        ctx.fillStyle = '#06b6d4';
+        ctx.fillRect(px + 16, py + 14, 24, 6);
+        ctx.fillStyle = '#10b981';
+        ctx.fillRect(px + 16, py + 24, 40, 3);
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillRect(px + 16, py + 30, 32, 3);
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(px + 16, py + 36, 20, 3);
+
+        // Base keyboard deck
+        ctx.fillStyle = '#475569';
+        ctx.fillRect(px + 4, py + 54, pw - 8, 38);
+        // Backlit keyboard grid
+        ctx.fillStyle = '#0f172a';
+        for (let r = 0; r < 4; r++) {
+          for (let c = 0; c < 9; c++) {
+            ctx.fillRect(px + 8 + c * 9, py + 58 + r * 5, 7, 3);
+          }
+        }
+        // Trackpad
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(px + pw / 2 - 12, py + 80, 24, 10);
+        break;
+
+      case 'ipphone':
+        // Cisco VoIP IP Phone: Angled chassis with handset and color display
+        ctx.fillStyle = '#1e2430';
+        ctx.fillRect(px, py, pw, ph);
+
+        // Left Handset Cradle & Handset
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(px + 4, py + 6, 24, ph - 12);
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(px + 6, py + 8, 20, 20); // Earpiece
+        ctx.fillRect(px + 10, py + 28, 12, 38); // Handle
+        ctx.fillRect(px + 6, py + 66, 20, 20); // Mouthpiece
+
+        // Right IP Phone Console
+        // Color LCD Display
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(px + 32, py + 10, pw - 38, 32);
+        ctx.fillStyle = '#1e3a8a';
+        ctx.fillRect(px + 34, py + 12, pw - 42, 28);
+        ctx.fillStyle = '#93c5fd';
+        ctx.fillRect(px + 38, py + 16, 24, 4); // Cisco Extension line
+        ctx.fillStyle = '#34d399';
+        ctx.fillRect(px + 38, py + 24, 18, 3); // Call status active
+
+        // Numeric Keypad (3x4 buttons)
+        for (let row = 0; row < 4; row++) {
+          for (let col = 0; col < 3; col++) {
+            ctx.fillStyle = '#475569';
+            ctx.fillRect(px + 34 + col * 14, py + 48 + row * 10, 10, 7);
+          }
+        }
+        // Speakerphone / Mute LED
+        ctx.fillStyle = '#10b981';
+        ctx.fillRect(px + pw - 14, py + 78, 6, 6);
+        break;
+
+      case 'printer':
+        // Office Laser Printer: Output tray, paper feed, LCD
+        ctx.fillStyle = '#e2e8f0';
+        ctx.fillRect(px, py, pw, ph);
+
+        // Dark grey side trims
+        ctx.fillStyle = '#64748b';
+        ctx.fillRect(px, py, 6, ph);
+        ctx.fillRect(px + pw - 6, py, 6, ph);
+
+        // Paper output slot
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(px + 10, py + 20, pw - 20, 14);
+        // Printed sheet of paper poking out
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(px + 16, py + 14, pw - 32, 10);
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillRect(px + 20, py + 16, pw - 40, 2);
+
+        // Control Panel
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(px + 10, py + 44, pw - 20, 20);
+        // Small green LCD screen
+        ctx.fillStyle = '#059669';
+        ctx.fillRect(px + 14, py + 48, 28, 12);
+        // Keypad
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillRect(px + 48, py + 50, 6, 6);
+        ctx.fillRect(px + 58, py + 50, 6, 6);
+
+        // Paper cassette bottom tray
+        ctx.fillStyle = '#cbd5e1';
+        ctx.fillRect(px + 10, py + 70, pw - 20, 18);
+        ctx.fillStyle = '#64748b';
+        ctx.fillRect(px + pw / 2 - 12, py + 76, 24, 6);
+        break;
+
+      case 'camera':
+        // Smart Security Camera: Dome with red night-vision ring
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(px, py, pw, ph);
+
+        // Mounting base plate
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(px + 12, py + 6, pw - 24, 16);
+
+        // Articulated ball joint
+        ctx.fillStyle = '#475569';
+        ctx.beginPath();
+        ctx.arc(px + pw / 2, py + 34, 14, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Dark glass dome camera housing
+        ctx.fillStyle = '#1e293b';
+        ctx.beginPath();
+        ctx.arc(px + pw / 2, py + 58, 24, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#0284c7';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // High aperture lens center
+        ctx.fillStyle = '#020617';
+        ctx.beginPath();
+        ctx.arc(px + pw / 2, py + 58, 12, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Red IR Night-Vision Ring
+        ctx.fillStyle = '#ef4444';
+        for (let a = 0; a < 8; a++) {
+          const angle = (a / 8) * Math.PI * 2;
+          const rx = px + pw / 2 + Math.cos(angle) * 16;
+          const ry = py + 58 + Math.sin(angle) * 16;
+          ctx.fillRect(rx - 1.5, ry - 1.5, 3, 3);
+        }
+        break;
+
+      case 'robot':
+        // Autonomous Warehouse AGV Robot: Yellow hazard chassis with LIDAR
+        ctx.fillStyle = '#ca8a04';
+        ctx.fillRect(px, py, pw, ph);
+
+        // Hazard striped bumper
+        for (let b = 0; b < pw; b += 12) {
+          ctx.fillStyle = '#0f172a';
+          ctx.beginPath();
+          ctx.moveTo(px + b, py + ph - 16);
+          ctx.lineTo(px + b + 6, py + ph - 16);
+          ctx.lineTo(px + b + 12, py + ph);
+          ctx.lineTo(px + b + 6, py + ph);
+          ctx.closePath();
+          ctx.fill();
+        }
+
+        // Heavy-duty rubber tread wheels
+        ctx.fillStyle = '#18181b';
+        ctx.fillRect(px - 4, py + 20, 8, ph - 40);
+        ctx.fillRect(px + pw - 4, py + 20, 8, ph - 40);
+
+        // Center cargo payload turntable
+        ctx.fillStyle = '#3f3f46';
+        ctx.beginPath();
+        ctx.arc(px + pw / 2, py + 42, 22, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Spinning 360 LIDAR puck dome
+        ctx.fillStyle = '#09090b';
+        ctx.beginPath();
+        ctx.arc(px + pw / 2, py + 42, 10, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillRect(px + pw / 2 - 2, py + 38, 4, 8); // laser aperture
+
+        // Status beacon & battery bar
+        ctx.fillStyle = '#22c55e';
+        ctx.fillRect(px + 12, py + 12, 18, 6); // Battery 100%
+        ctx.fillStyle = '#eab308';
+        ctx.fillRect(px + pw - 24, py + 12, 12, 8); // Flashing beacon
+        break;
+
+      case 'ap':
+        // Cisco Catalyst Wi-Fi 6 Access Point: Circular ceiling dome
+        ctx.fillStyle = '#f8fafc';
+        ctx.fillRect(px, py, pw, ph);
+
+        // Elegant slim chassis bevel
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(px + 4, py + 4, pw - 8, ph - 8);
+
+        // Center Cisco blue circular emblem
+        ctx.fillStyle = '#0284c7';
+        ctx.beginPath();
+        ctx.arc(px + pw / 2, py + ph / 2, 16, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Radiating Wi-Fi radio waves (Cyan/Blue)
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 2;
+        for (let r = 24; r <= 36; r += 6) {
+          ctx.beginPath();
+          ctx.arc(px + pw / 2, py + ph / 2, r, -Math.PI * 0.75, -Math.PI * 0.25);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(px + pw / 2, py + ph / 2, r, Math.PI * 0.25, Math.PI * 0.75);
+          ctx.stroke();
+        }
+
+        // Center LED status ring
+        ctx.fillStyle = '#10b981';
+        ctx.beginPath();
+        ctx.arc(px + pw / 2, py + ph / 2, 5, 0, Math.PI * 2);
+        ctx.fill();
+        break;
     }
   }
 
@@ -629,6 +897,7 @@ class PixelTextureFactoryClass {
     const px = 12;
     const py = 8;
     const pw = s - 24;
+    const ph = s - 16;
 
     switch (type) {
       case 'gateway':
@@ -722,6 +991,65 @@ class PixelTextureFactoryClass {
         ctx.fillStyle = '#10b981';
         ctx.fillRect(px + 14, py + 16, pw - 28, 42);
         break;
+
+      case 'pc':
+        // Monitor screen glow + power LED
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillRect(px + 10, py + 12, pw - 42, 44);
+        ctx.fillStyle = '#10b981';
+        ctx.fillRect(px + pw - 16, py + 34, 4, 4);
+        break;
+
+      case 'laptop':
+        // Laptop screen and keyboard glow
+        ctx.fillStyle = '#06b6d4';
+        ctx.fillRect(px + 12, py + 10, pw - 24, 38);
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillRect(px + 8, py + 58, pw - 16, 20);
+        break;
+
+      case 'ipphone':
+        // Phone LCD backlight & speaker LED
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillRect(px + 34, py + 12, pw - 42, 28);
+        ctx.fillStyle = '#10b981';
+        ctx.fillRect(px + pw - 14, py + 78, 6, 6);
+        break;
+
+      case 'printer':
+        // Printer status green LED & display
+        ctx.fillStyle = '#10b981';
+        ctx.fillRect(px + 14, py + 48, 28, 12);
+        break;
+
+      case 'camera':
+        // Night-vision IR ring & lens reflection
+        ctx.fillStyle = '#ef4444';
+        for (let a = 0; a < 8; a++) {
+          const angle = (a / 8) * Math.PI * 2;
+          const rx = px + pw / 2 + Math.cos(angle) * 16;
+          const ry = py + 58 + Math.sin(angle) * 16;
+          ctx.fillRect(rx - 1.5, ry - 1.5, 3, 3);
+        }
+        break;
+
+      case 'robot':
+        // LIDAR laser aperture & orange flashing beacon
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillRect(px + pw / 2 - 2, py + 38, 4, 8);
+        ctx.fillStyle = '#eab308';
+        ctx.fillRect(px + pw - 24, py + 12, 12, 8);
+        ctx.fillStyle = '#22c55e';
+        ctx.fillRect(px + 12, py + 12, 18, 6);
+        break;
+
+      case 'ap':
+        // Wi-Fi 6 status halo & center blue logo
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillRect(px + pw / 2 - 6, py + ph / 2 - 6, 12, 12);
+        ctx.fillStyle = '#10b981';
+        ctx.fillRect(px + pw / 2 - 3, py + ph / 2 - 3, 6, 6);
+        break;
     }
   }
 
@@ -734,6 +1062,13 @@ class PixelTextureFactoryClass {
       case 'server': return '#a855f7';
       case 'database': return '#f59e0b';
       case 'client': return '#06b6d4';
+      case 'pc': return '#38bdf8';
+      case 'laptop': return '#22d3ee';
+      case 'ipphone': return '#34d399';
+      case 'printer': return '#94a3b8';
+      case 'camera': return '#fb7185';
+      case 'robot': return '#facc15';
+      case 'ap': return '#0ea5e9';
     }
   }
 }

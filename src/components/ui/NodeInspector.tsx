@@ -28,6 +28,7 @@ import {
 import { useTopologyStore } from '../../state/useTopologyStore';
 import { useSimulationStore } from '../../state/useSimulationStore';
 import { HARDWARE_DEFS, PacketProtocol, AclRule } from '../../engine/types';
+import { AudioManager } from '../../utils/AudioManager';
 
 export const NodeInspector: React.FC = () => {
   const selectedNode = useTopologyStore((s) => s.getSelectedNode());
@@ -36,6 +37,7 @@ export const NodeInspector: React.FC = () => {
   const rotateNode = useTopologyStore((s) => s.rotateNode);
   const updateNodeName = useTopologyStore((s) => s.updateNodeName);
   const updateNodeIp = useTopologyStore((s) => s.updateNodeIp);
+  const updateNodeVlan = useTopologyStore((s) => s.updateNodeVlan);
   const getCablesForNode = useTopologyStore((s) => s.getCablesForNode);
   const deleteCable = useTopologyStore((s) => s.deleteCable);
   const setActiveTool = useTopologyStore((s) => s.setActiveTool);
@@ -197,7 +199,12 @@ export const NodeInspector: React.FC = () => {
   };
 
   return (
-    <aside className="fixed top-18 right-4 z-20 w-88 max-w-[calc(100vw-32px)] bg-[#0c121e]/98 border border-slate-700/80 rounded-2xl shadow-2xl shadow-black/80 font-mono text-xs text-slate-300 pointer-events-auto flex flex-col max-h-[calc(100vh-140px)] overflow-hidden">
+    <aside className="fixed max-md:bottom-0 max-md:left-0 max-md:right-0 max-md:w-full max-md:max-h-[75vh] max-md:rounded-b-none md:top-18 md:right-4 md:w-96 md:rounded-2xl z-30 bg-[#0c121e]/98 border border-slate-700/80 shadow-2xl shadow-black/80 font-mono text-xs text-slate-300 pointer-events-auto flex flex-col overflow-hidden">
+      {/* Mobile Drawer Grab Bar */}
+      <div className="md:hidden flex justify-center py-1 bg-[#090e17] border-b border-slate-800">
+        <div className="w-10 h-1 bg-slate-600 rounded-full" />
+      </div>
+
       {/* Top Header */}
       <div className="p-3.5 border-b border-slate-700/60 bg-[#0f172a]/95 flex items-start justify-between gap-2">
         <div className="flex-1">
@@ -380,7 +387,46 @@ export const NodeInspector: React.FC = () => {
               </div>
             </div>
 
-            {/* IP Address & VLAN */}
+            {/* Tycoon Productivity & Connectivity Status */}
+            <div className="p-2.5 bg-[#121927] rounded-xl border border-slate-700/60 space-y-1.5">
+              <div className="flex items-center justify-between text-[11px]">
+                <span className="font-semibold text-slate-300 flex items-center gap-1.5">
+                  <Activity className="w-3.5 h-3.5 text-emerald-400" /> Tycoon Productivity
+                </span>
+                <span
+                  className={`font-bold px-1.5 py-0.2 rounded text-[10px] ${
+                    selectedNode.hasGatewayRoute
+                      ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/40'
+                      : 'bg-rose-950 text-rose-300 border border-rose-500/40 animate-pulse'
+                  }`}
+                >
+                  {selectedNode.hasGatewayRoute
+                    ? `${selectedNode.productivityScore || 100}% Active`
+                    : 'Disconnected (0%)'}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-[10px] pt-1">
+                <div className="bg-[#0a0f18] p-1.5 rounded-lg border border-slate-800">
+                  <span className="text-slate-400 block">Connection Medium</span>
+                  <span className="font-bold text-white truncate">
+                    {selectedNode.isWirelessConnected
+                      ? '📡 Wi-Fi 6 AP'
+                      : connectedCables.length > 0
+                      ? '🔌 Cat6 / Fiber'
+                      : '❌ Unconnected'}
+                  </span>
+                </div>
+                <div className="bg-[#0a0f18] p-1.5 rounded-lg border border-slate-800">
+                  <span className="text-slate-400 block">Revenue Rate</span>
+                  <span className="font-bold text-emerald-400">
+                    +${selectedNode.revenuePerSec || 0}/s
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* IP Address & Cisco VLAN */}
             <div className="space-y-2">
               <div>
                 <label className="text-[10px] text-slate-400 block mb-1">
@@ -398,13 +444,24 @@ export const NodeInspector: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-[10px] text-slate-400 block mb-1">VLAN ID</label>
-                  <div className="px-2.5 py-1 bg-[#0a0f18] border border-slate-700 rounded-lg text-slate-300">
-                    VLAN {selectedNode.vlanId}
-                  </div>
+                  <label className="text-[10px] text-slate-400 block mb-1">Cisco VLAN</label>
+                  <select
+                    value={selectedNode.vlanId}
+                    onChange={(e) => {
+                      AudioManager.playClick(900);
+                      updateNodeVlan(selectedNode.id, Number(e.target.value));
+                    }}
+                    className="w-full bg-[#0a0f18] border border-slate-700 rounded-lg px-2 py-1 text-cyan-300 text-xs focus:border-cyan-500 focus:outline-none cursor-pointer"
+                  >
+                    <option value={10}>VLAN 10 (Data)</option>
+                    <option value={20}>VLAN 20 (Voice)</option>
+                    <option value={30}>VLAN 30 (IoT/Bot)</option>
+                    <option value={50}>VLAN 50 (Server)</option>
+                    <option value={1}>VLAN 1 (Mgmt)</option>
+                  </select>
                 </div>
                 <div>
-                  <label className="text-[10px] text-slate-400 block mb-1">Subnet</label>
+                  <label className="text-[10px] text-slate-400 block mb-1">Subnet Mask</label>
                   <div className="px-2.5 py-1 bg-[#0a0f18] border border-slate-700 rounded-lg text-slate-300 text-[11px] truncate">
                     {selectedNode.subnetMask}
                   </div>

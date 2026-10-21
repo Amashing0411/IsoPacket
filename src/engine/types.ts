@@ -4,18 +4,27 @@
  */
 
 export type HardwareNodeType =
+  // Infrastructure
   | 'gateway'    // ISP Fiber ONT / WAN Gateway
   | 'router'     // Core L3 Router (BGP / OSPF / Static routes)
-  | 'switch'     // Layer 2 Managed Switch (VLANs, Trunking)
+  | 'switch'     // Layer 2/3 Managed Switch (VLANs, Trunking)
   | 'firewall'   // Stateful Next-Gen Firewall (ACLs, NAT, IDS)
+  | 'ap'         // Cisco Catalyst Wi-Fi 6 Access Point
   | 'server'     // Web / Application Server (HTTP 80/443, Docker)
   | 'database'   // PostgreSQL / Redis DB Node (TCP 5432 / 6379)
-  | 'client';    // Workstation / IoT Camera / LAN Client
+  // End Devices
+  | 'pc'         // Office Workstation Desktop PC (Data VLAN 10)
+  | 'laptop'     // Mobile Executive Laptop (Wi-Fi 6 or Ethernet)
+  | 'ipphone'    // Cisco VoIP IP Phone (Voice VLAN 20 with QoS)
+  | 'printer'    // Office Multifunction Network Printer
+  | 'camera'     // HD Smart Security Camera (PoE RTSP Stream)
+  | 'robot'      // Autonomous Warehouse AGV Robot (IoT VLAN 30)
+  | 'client';    // Generic Workstation / IoT Client (Backward compatible)
 
 export interface NodePort {
   id: string;
   name: string;        // e.g. "eth0", "wan0", "lan1"
-  type: 'copper' | 'fiber';
+  type: 'copper' | 'fiber' | 'wireless';
   connectedCableId?: string;
   macAddress: string;
   ipAddress?: string;
@@ -57,6 +66,13 @@ export interface PlacedNode {
   queueLength: number;
   aclRules: AclRule[];
   createdAt: number;
+  // Tycoon & Connectivity Metrics
+  isWirelessConnected?: boolean;
+  associatedApId?: string;
+  productivityScore?: number; // 0 to 100%
+  revenuePerSec?: number;     // $/s
+  hasGatewayRoute?: boolean;
+  latencyMs?: number;
 }
 
 export interface CableConnection {
@@ -134,9 +150,16 @@ export interface HardwareMetadata {
   defaultPorts: number;
   symbol: string;
   defaultIp: string;
+  category: 'infrastructure' | 'end_device' | 'security';
+  cost: number;
+  revenuePerSec: number;
+  defaultVlan: number;
+  isWireless?: boolean;
+  wirelessRadius?: number; // In grid tiles (e.g. 7 tiles for AP)
 }
 
 export const HARDWARE_DEFS: Record<HardwareNodeType, HardwareMetadata> = {
+  // --- Infrastructure ---
   gateway: {
     type: 'gateway',
     name: 'WAN Fiber Gateway',
@@ -145,24 +168,36 @@ export const HARDWARE_DEFS: Record<HardwareNodeType, HardwareMetadata> = {
     defaultPorts: 2,
     symbol: 'WAN',
     defaultIp: '198.51.100.1',
+    category: 'infrastructure',
+    cost: 450,
+    revenuePerSec: 0,
+    defaultVlan: 1,
   },
   router: {
     type: 'router',
-    name: 'Core Layer 3 Router',
+    name: 'Cisco Core L3 Router',
     shortDesc: 'Inter-VLAN routing, OSPF, and hardware NAT table',
     accentColor: '#6366f1', // Indigo 500
     defaultPorts: 4,
     symbol: 'RTR',
     defaultIp: '10.0.0.1',
+    category: 'infrastructure',
+    cost: 600,
+    revenuePerSec: 0,
+    defaultVlan: 1,
   },
   switch: {
     type: 'switch',
-    name: 'Managed L2 Switch',
+    name: 'Cisco Catalyst L2/L3 Switch',
     shortDesc: '24-Port 10GbE enterprise switch with 802.1Q VLAN trunking',
     accentColor: '#10b981', // Emerald 500
     defaultPorts: 8,
     symbol: 'SW',
     defaultIp: '10.0.0.2',
+    category: 'infrastructure',
+    cost: 350,
+    revenuePerSec: 0,
+    defaultVlan: 1,
   },
   firewall: {
     type: 'firewall',
@@ -172,6 +207,24 @@ export const HARDWARE_DEFS: Record<HardwareNodeType, HardwareMetadata> = {
     defaultPorts: 4,
     symbol: 'FW',
     defaultIp: '10.0.0.254',
+    category: 'security',
+    cost: 500,
+    revenuePerSec: 0,
+    defaultVlan: 1,
+  },
+  ap: {
+    type: 'ap',
+    name: 'Wi-Fi 6 Access Point',
+    shortDesc: 'Cisco Catalyst 9100 AP with 7-tile wireless coverage ring',
+    accentColor: '#0ea5e9', // Sky 500
+    defaultPorts: 1,
+    symbol: 'AP',
+    defaultIp: '10.0.0.5',
+    category: 'infrastructure',
+    cost: 280,
+    revenuePerSec: 0,
+    defaultVlan: 1,
+    wirelessRadius: 7,
   },
   server: {
     type: 'server',
@@ -180,7 +233,11 @@ export const HARDWARE_DEFS: Record<HardwareNodeType, HardwareMetadata> = {
     accentColor: '#a855f7', // Purple 500
     defaultPorts: 2,
     symbol: 'SRV',
-    defaultIp: '10.0.10.10',
+    defaultIp: '10.0.50.10',
+    category: 'infrastructure',
+    cost: 500,
+    revenuePerSec: 10,
+    defaultVlan: 50,
   },
   database: {
     type: 'database',
@@ -189,15 +246,106 @@ export const HARDWARE_DEFS: Record<HardwareNodeType, HardwareMetadata> = {
     accentColor: '#f59e0b', // Amber 500
     defaultPorts: 2,
     symbol: 'DB',
-    defaultIp: '10.0.20.5',
+    defaultIp: '10.0.50.5',
+    category: 'infrastructure',
+    cost: 650,
+    revenuePerSec: 15,
+    defaultVlan: 50,
+  },
+
+  // --- End Devices (Tycoon Productivity & Revenue Generators) ---
+  pc: {
+    type: 'pc',
+    name: 'Office Workstation PC',
+    shortDesc: 'Staff workstation requiring internet gateway route (VLAN 10)',
+    accentColor: '#38bdf8', // Sky 400
+    defaultPorts: 1,
+    symbol: 'PC',
+    defaultIp: '10.0.10.101',
+    category: 'end_device',
+    cost: 150,
+    revenuePerSec: 20,
+    defaultVlan: 10,
+  },
+  laptop: {
+    type: 'laptop',
+    name: 'Mobile Executive Laptop',
+    shortDesc: 'Portable laptop connecting via Wi-Fi 6 AP or Cat6 patch cable',
+    accentColor: '#22d3ee', // Cyan 400
+    defaultPorts: 1,
+    symbol: 'LAP',
+    defaultIp: '10.0.10.102',
+    category: 'end_device',
+    cost: 180,
+    revenuePerSec: 25,
+    defaultVlan: 10,
+    isWireless: true,
+  },
+  ipphone: {
+    type: 'ipphone',
+    name: 'Cisco VoIP IP Phone',
+    shortDesc: 'Enterprise desk phone on dedicated Voice VLAN 20 with QoS',
+    accentColor: '#34d399', // Emerald 400
+    defaultPorts: 2,
+    symbol: 'VOIP',
+    defaultIp: '10.0.20.101',
+    category: 'end_device',
+    cost: 120,
+    revenuePerSec: 12,
+    defaultVlan: 20,
+  },
+  printer: {
+    type: 'printer',
+    name: 'Network Laser Printer',
+    shortDesc: 'Shared office departmental printer on Data VLAN 10',
+    accentColor: '#94a3b8', // Slate 400
+    defaultPorts: 1,
+    symbol: 'PRT',
+    defaultIp: '10.0.10.200',
+    category: 'end_device',
+    cost: 200,
+    revenuePerSec: 8,
+    defaultVlan: 10,
+  },
+  camera: {
+    type: 'camera',
+    name: 'Smart Security Camera',
+    shortDesc: 'PoE RTSP surveillance camera streaming to security server',
+    accentColor: '#fb7185', // Rose 400
+    defaultPorts: 1,
+    symbol: 'CAM',
+    defaultIp: '10.0.30.150',
+    category: 'end_device',
+    cost: 160,
+    revenuePerSec: 18,
+    defaultVlan: 30,
+    isWireless: true,
+  },
+  robot: {
+    type: 'robot',
+    name: 'Autonomous Warehouse Robot',
+    shortDesc: 'Fulfillment AGV requiring low-latency AP or wireless roaming',
+    accentColor: '#facc15', // Yellow 400
+    defaultPorts: 1,
+    symbol: 'BOT',
+    defaultIp: '10.0.30.201',
+    category: 'end_device',
+    cost: 320,
+    revenuePerSec: 45,
+    defaultVlan: 30,
+    isWireless: true,
   },
   client: {
     type: 'client',
-    name: 'Workstation / IoT',
-    shortDesc: 'End-user client, developer terminal, or IoT sensor',
-    accentColor: '#06b6d4', // Cyan 500
+    name: 'Workstation / Terminal',
+    shortDesc: 'General network client terminal (legacy mode compatible)',
+    accentColor: '#06b6d4',
     defaultPorts: 1,
     symbol: 'CLI',
-    defaultIp: '10.0.30.101',
+    defaultIp: '10.0.10.50',
+    category: 'end_device',
+    cost: 120,
+    revenuePerSec: 15,
+    defaultVlan: 10,
   },
 };

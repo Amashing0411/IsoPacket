@@ -1,141 +1,120 @@
-# IsoPacket: HD-2D Isometric Network Topology Simulator & Homelab Visualizer
-> **Architecture Roadmap, Invariants & Engineering Specification**
+# IsoPacket: Cisco-Inspired Network Tycoon & HD-2D Homelab Visualizer
+> **Architecture Roadmap, Enterprise Invariants & Engineering Specification**
 
-IsoPacket is an open-source, HD-2D (2.5D Pixel-Art + Three.js) Network Topology Simulator, Homelab Visualizer, and Packet Routing Puzzle Game. It merges the visual charm of classic 16-bit isometric pixel art with a deterministic packet routing simulation engine and real-time 3D graphics (dynamic shadows, emissive glow, 3D drooping patch cables, and instanced packet flows).
+IsoPacket is a production-ready, mobile-friendly **Cisco-Inspired Network Tycoon & Educational Topology Visualizer Game**. It combines classic 16-bit isometric HD-2D pixel art with a deterministic packet routing simulation engine, real-time 3D graphics (dynamic soft shadows, emissive activity LEDs, catenary drooping patch cables, instanced GPU packet streams), and actual Cisco enterprise concepts (VLAN tagging, Subnetting, Access Control Lists, Wi-Fi 6 AP coverage, and Tycoon office productivity).
 
 ---
 
 ## 1. Architectural Invariants
 
-### 1.1 Visual Style (HD-2D / 2.5D)
-- **Pixel-Art Texture Fidelity:** All floor tiles, hardware front plates, servers, routers, and switches are procedurally generated or loaded at 64x64/128x128 resolution using `THREE.NearestFilter` with zero mipmap blurring (`generateMipmaps = false`, `minFilter = THREE.NearestFilter`, `magFilter = THREE.NearestFilter`).
-- **Orthographic Isometric Camera:** True axonometric/isometric projection using `THREE.OrthographicCamera` angled at $\approx 35.264^\circ$ tilt ($\arctan(1/\sqrt{2})$) and $45^\circ$ horizontal azimuth rotation.
-- **Dynamic Lighting & Emissive Materials:**
-  - Directional sun/spotlight with soft PCF shadows (`castShadow = true`).
-  - Emissive status LEDs on rack-mounted servers, switches, and routers (blinking TX/RX activity, link state, fault red/amber indicators).
-  - Ground plane contact shadows and crisp isometric tile highlights.
-- **Zero 404 Dependencies:** Initial boot loads 100% procedurally rendered retro hardware pixel art rendered onto offscreen HTML5 canvases.
+### 1.1 HD-2D Isometric Viewport & Visual Presentation
+- **32x32 Isometric Data Center Baseplate:** Expansive high-tech raised floor with metallic cooling vents and grounding rivets.
+- **Strict Hazard Perimeter:** Hazard yellow-and-black caution stripes are strictly constrained to the absolute outer perimeter tiles (`gx === 0 || gx === 31 || gz === 0 || gz === 31`).
+- **Retro Pixel-Art Shaders & Procedural Textures:** Zero 404 external sprite dependencies. All hardware chassis, drive caddies, RJ45 ports, and terminals are generated procedurally on offscreen HTML5 canvases using `THREE.NearestFilter` with zero mipmap blurring.
+- **Wi-Fi 6 Cellular Radio Rings:** Cisco Catalyst 9100 Access Points project a 7-tile dynamic radio coverage radius on the floor, enabling seamless wireless roaming for laptops, security cameras, and automated warehouse AGV robots.
+- **Catenary Physical Cables:** 3D catenary bezier curves with gravity-driven sag and RJ-45 boot colors (Cat6 Blue, Fiber Yellow, Security Red, Database Purple, Voice Green).
 
-### 1.2 Separation of Concerns & Directory Structure
+### 1.2 Cisco Enterprise Concepts & Tycoon Economics
+- **Hierarchical Network Design:**
+  - **Core Layer:** WAN Fiber Gateways & Cisco Core L3 Routers.
+  - **Distribution Layer:** Cisco Catalyst L2/L3 Switches with 802.1Q trunking & Next-Gen Firewalls with stateful ACL rules.
+  - **Access & Wireless Layer:** Wi-Fi 6 APs & Structured Cat6 Cabling.
+  - **End Devices & Workloads:** Workstation PCs, Executive Laptops, Cisco VoIP IP Phones, Network Laser Printers, Smart PoE Cameras, and Autonomous AGV Robots.
+- **Connectivity & Productivity Loop:**
+  - End devices *must* maintain an active cabled or wireless route to an active ISP Gateway.
+  - While online, each endpoint produces recurring cash ($/s) based on link stability and queue latency:
+    - Autonomous Warehouse AGV Robot: **+$45/s** (IoT VLAN 30)
+    - Mobile Executive Laptop: **+$25/s** (Data VLAN 10)
+    - Office Workstation PC: **+$20/s** (Data VLAN 10)
+    - Smart Security Camera: **+$18/s** (IoT VLAN 30)
+    - NVMe Database Node: **+$15/s** (Server VLAN 50)
+    - Cisco VoIP IP Phone: **+$12/s** (Voice VLAN 20 with QoS)
+    - 1U Blade Web Server: **+$10/s** (Server VLAN 50)
+    - Network Laser Printer: **+$8/s** (Data VLAN 10)
+  - If a link drops, switch buffers overflow, or a cable is cut, workers halt and revenue drops to $0/s!
+
+### 1.3 Audio Architecture (`src/utils/AudioManager.ts`)
+- **Web Audio API Synthesizer:** Zero external audio files required. Synthesizes mechanical switch clicks, RJ45 cable connection snaps, packet drop glitch buzzers, victory arpeggio fanfares, and an ambient cyberpunk synth drone.
+- **Audio Unlock:** Cleanly unlocked on user interaction during the animated loading sequence.
+
+### 1.4 Responsive HUD & Mobile Touch Controls
+- **Fluid Multi-Touch Gestures:** Pinch-to-zoom (tracking distance between dual touch points), single-finger pan, and tap selection.
+- **Adaptive Drawer / Bottom-Sheet:** On mobile screens, the Node Inspector transforms into a slide-up bottom sheet with grab handles; on desktop, it functions as a compact side drawer.
+- **Interactive Onboarding Tutorial:** Step-by-step walkthrough explaining core routing, distribution switching, VLAN segmentation, and tycoon objectives.
+
+---
+
+## 2. Directory Structure
 ```text
 /
-├── PLAN.md                               # This document: Single Source of Truth
+├── PLAN.md                               # Architecture Roadmap & Technical Invariants
+├── README.md                             # Production GitHub & Vercel Documentation
 ├── src/
 │   ├── engine/                           # Pure TypeScript deterministic packet engine
-│   │   ├── types.ts                      # Packets, Protocols, L2/L3 Node specs, Interfaces
-│   │   ├── SimulationEngine.ts           # Tick scheduler, clock sync, packet queue
-│   │   ├── RoutingTable.ts               # L3 CIDR prefix matching & next-hop resolution
-│   │   ├── FirewallAcl.ts                # Stateless & stateful L4 packet filtering rules
-│   │   └── NetworkNode.ts                # Base class for Router, Switch, Server, Firewall
+│   │   ├── types.ts                      # Packets, Protocols, Cisco L2/L3 Node specs
+│   │   ├── SimulationEngine.ts           # Tick scheduler, routing graph, tycoon productivity
+│   │   ├── scenarioDefs.ts               # Campaign missions & starter topologies
+│   │   ├── scenarioTypes.ts              # Budget rules, SLA metrics, win conditions
+│   │   └── simulation.test.ts            # Node.js test suite for engine invariants
 │   │
-│   ├── state/                            # Zustand store
-│   │   ├── useTopologyStore.ts           # Grid placement, nodes, cables, selection, tool mode
-│   │   └── useSimulationStore.ts         # Engine speed, stats, scenario objectives, metrics
+│   ├── utils/
+│   │   └── AudioManager.ts               # Synthesized Web Audio API sound effects & synth BGM
 │   │
-│   ├── assets/                           # Procedural Canvas 16-bit Pixel-Art Generator
-│   │   ├── PixelTextureFactory.ts        # Offscreen canvas generator (tiles, servers, routers)
-│   │   └── SpritePresets.ts              # Palettes, LED coordinates, bezel textures
+│   ├── state/                            # Zustand reactive state stores
+│   │   ├── useTopologyStore.ts           # 32x32 grid nodes, cables, tools, selection
+│   │   ├── useSimulationStore.ts         # Simulation clock, play/pause, stats
+│   │   └── useScenarioStore.ts           # Campaign missions, SLA tracking, chaos drawer
+│   │
+│   ├── assets/
+│   │   └── PixelTextureFactory.ts        # Procedural 16-bit pixel-art generator for all Cisco nodes
 │   │
 │   ├── components/
-│   │   ├── canvas/                       # Three.js 2.5D Isometric Scene
-│   │   │   ├── IsometricViewport.tsx     # Three.js Canvas container with Pan/Zoom & Raycaster
-│   │   │   ├── IsometricGrid.tsx         # 16x16 data center server floor tiles
-│   │   │   ├── HardwareNodeMesh.tsx      # 2.5D layered billboard / beveled server rack mesh
-│   │   │   ├── CatenaryCableMesh.tsx     # 3D drooping bezier spline patch cables
-│   │   │   └── InstancedPacketSystem.tsx # GPU InstancedMesh glowing packet renderer
+│   │   ├── canvas/
+│   │   │   ├── IsometricViewport.tsx     # 32x32 Three.js canvas, touch gestures, AP rings
+│   │   │   ├── CatenaryCableSystem.ts    # Physical drooping catenary bezier cables
+│   │   │   └── InstancedPacketSystem.ts  # Instanced glowing packets & spark bursts
 │   │   │
-│   │   └── ui/                           # Cyberpunk / Homelab Terminal HUD
-│   │       ├── HeaderBar.tsx             # Topology title, scenario indicator, simulation speed
-│   │       ├── BottomToolbar.tsx         # Sleek collapsible dock for hardware placement
-│   │       ├── NodeInspector.tsx         # Drawer for IP, MAC, VLAN, ACL, and queue monitoring
-│   │       ├── ScenarioModal.tsx         # Campaign briefings and win/loss scoring
-│   │       └── TopologyExportModal.tsx   # JSON / Docker-Compose import & export
+│   │   └── ui/
+│   │       ├── HeaderBar.tsx             # Tycoon status, Cash ($), SLA %, Speed, Audio mute
+│   │       ├── BottomToolbar.tsx         # Categorized dock (Infrastructure vs End Devices)
+│   │       ├── NodeInspector.tsx         # Mobile bottom-sheet / drawer for IP, VLAN, ACL, cables
+│   │       ├── LoadingScreen.tsx         # Cyberpunk booting sequence & progress bar
+│   │       ├── TutorialModal.tsx         # 5-step interactive Cisco onboarding tutorial
+│   │       ├── ScenarioModal.tsx         # Campaign mission briefings & victory celebrations
+│   │       ├── ChaosMonkeyDrawer.tsx     # Fault injection (cable cut, DDoS flood, server crash)
+│   │       └── HelpModal.tsx             # Keyboard shortcuts & controls guide
 │   │
-│   ├── App.tsx                           # Root orchestrator
-│   └── main.tsx                          # React entry point
+│   ├── App.tsx                           # Master application orchestrator
+│   └── main.tsx                          # Vite React entry point
 ```
 
 ---
 
-## 2. Five-Phase Implementation Roadmap
+## 3. Implementation Roadmap & Status
 
-### Phase 1: Foundation, `PLAN.md` & HD-2D Isometric Renderer [COMPLETED]
-- [x] **Architecture Blueprint:** Author complete `PLAN.md` with system constraints and 5-phase breakdown.
-- [x] **PixelTextureFactory:** Procedural pixel-art canvas generator for:
-  - Isometric data center floor tiles (raised flooring, server rack vents, warning stripes).
-  - Hardware chassis sprites (ISP Gateway, Core Router, L2 Switch, Next-Gen Firewall, Web Server Blade, PostgreSQL Database, Workstation / IoT Client).
-  - Normal, bump, and emissive activity maps.
-- [x] **Orthographic Isometric Viewport:**
-  - Configured with `THREE.OrthographicCamera`, silky pan (middle/right-drag or space-drag), and discrete pixel-snapped zoom.
-  - Directional shadow-casting key light, cool hemisphere fill, and ambient studio grounding.
-- [x] **Interactive 16x16 Isometric Floor Grid:**
-  - Raycaster calculating continuous mouse-to-isometric-grid coordinate transformations.
-  - Hover cursor tile outline and height-offset placement proxy.
-- [x] **Node Placement & Manipulation Foundation:**
-  - Zustand state for hardware node placements on grid `(x, y)`.
-  - Add, move, select, and delete node capabilities.
-  - Bottom hardware palette dock (zero viewport obstruction).
-
-### Phase 2: 3D Catenary Patch Cables & Deterministic Packet Engine [COMPLETED]
-- [x] **Port-to-Port Wiring System:**
-  - Interactive cable connection tool (click port on Node A -> drag catenary curve to Node B).
-  - Physical catenary curve math: smooth sag under gravity with subtle slack.
-  - RJ-45 boot colors (Blue Cat6, Red Management, Yellow Fiber, Green DMZ) and port status LEDs.
-- [x] **Deterministic Simulation Engine (`SimulationEngine.ts`):**
-  - Discrete tick updates with Play, Pause, 1x/2x speed, and Single Step.
-  - Packet structures: Header (SrcIP, DstIP, Protocol: `HTTP|HTTPS|DNS|SSH|SQL|DDOS`, PayloadSize, TTL, VLAN_Tag).
-  - Bandwidth, queue size limits (FIFO buffer management), latency calculation, and packet loss on buffer overrun.
-  - Shortest-path graph routing across cables and automated background traffic scheduling.
-- [x] **InstancedMesh GPU Packet Flow:**
-  - `THREE.InstancedMesh` rendering hundreds of glowing voxel packets smoothly moving along 3D catenary splines at 60 FPS.
-  - Color-coded packet trails based on protocol (HTTP: Green, HTTPS: Cyan, DNS: Indigo, SSH: Amber, SQL: Purple, DDoS: Red).
-  - Drop spark particle explosion bursts when packets drop due to node queue overrun.
-
-### Phase 3: Deep Inspection HUD, CLI Configurator & Firewall ACLs [COMPLETED]
-- [x] **Interactive Node Inspector Drawer:**
-  - Network Configuration: Assign IP (`192.168.1.1/24`), MAC, Default Gateway, and VLAN ID.
-  - Interface state: Port status, link duplex, Ingress/Egress throughput gauges (Mbps).
-  - Queue depth buffer bar (with percentage & FIFO threshold) and CPU/Memory utilization meters.
-  - Active Catenary Patch Cables list with disconnect buttons and wire shortcuts.
-- [x] **Firewall & ACL Rule Editor:**
-  - Order-dependent rule chain (`ALLOW` / `DROP`) evaluated sequentially in real time by `SimulationEngine.ts`.
-  - Filtering by Protocol (`HTTP`, `HTTPS`, `DNS`, `SSH`, `SQL`, `DDOS`, `ALL`), Target VLAN, and Port.
-  - Hit counter per rule tracking blocked/allowed packets.
-  - Dynamic 3D holographic hexagonal energy shield barrier & spark burst animations when malicious packets hit a DROP rule.
-- [x] **Terminal / Homelab CLI Mode:**
-  - Embedded interactive terminal shell supporting `ping`, `iptables -L`, `route`, `ifconfig`, `tcpdump`, `clear`, and `help`.
-
-### Phase 4: Campaign Scenarios & Chaos Engineering
-- [ ] **Campaign 1: "The Slashdot Traffic Spike"**
-  - Web server overloaded by incoming HTTP GET traffic; configure load balancer and horizontal cache server replica before SLA falls below 99.0%.
-- [ ] **Campaign 2: "DDoS Mitigation 101"**
-  - High-volume SYN flood from botnet gateway; deploy Next-Gen Firewall with rate-limiting ACLs while preserving legitimate customer traffic.
-- [ ] **Campaign 3: "Zero-Downtime Database Failover"**
-  - Primary DB failure simulation; reroute connection strings to read-replica switchover with zero dropped transactions.
-- [ ] **Campaign 4: "VLAN Segmentation Challenge"**
-  - Isolate untrusted IoT cameras from internal finance server while maintaining gateway internet egress.
-
-### Phase 5: Open-Source Polish, Sprite Hot-Swap Studio & Topology Exporter
-- [ ] **Custom Sprite Manager:**
-  - Drag-and-drop custom PNG pixel art to replace procedural node textures on the fly.
-- [ ] **Topology Import & Export:**
-  - JSON Schema serialization of full network state (nodes, coordinates, cables, ACLs, IP tables).
-  - Docker-Compose importer: automatically translates `services`, `ports`, and `networks` into an isometric 3D rack diagram!
-- [ ] **Audio Feedback:**
-  - Zero-dependency Web Audio synthesizer for relay clicks, server hum, packet ping chirps, and alarm buzzers.
-
----
-
-## 3. Phase 1 Technical Invariants (Current Sprint)
-1. **Three.js Canvas Setup:**
-   - Isolated `div` mount with standard `useRef`.
-   - `WebGLRenderer` configured with `THREE.SRGBColorSpace`, PCF soft shadow maps, and `toneMapping = THREE.ACESFilmicToneMapping`.
-   - ResizeObserver handling seamless window resize and DPI scaling (`Math.min(window.devicePixelRatio, 2)`).
-2. **Procedural Pixel-Art Generation:**
-   - 64x64 Canvas with isometric isometric diamond tiles.
-   - Distinctive 2.5D hardware models: Core Router (enterprise rack chassis with LED array), L2 Switch (24-port front panel), Firewall (hardened red industrial rack), Web Server (1U blade with drive bays), Database (array of illuminated hot-swap NVMe drives), Gateway (fiber ONT/satellite dish motif).
-3. **Smooth Interaction:**
-   - Isometric coordinate conversion:
-     - World position $(X, 0, Z)$ maps to grid tile: $gx = \text{round}(X / \text{tileSize})$, $gz = \text{round}(Z / \text{tileSize})$.
-   - Drag to pan, scroll wheel to zoom (smooth exponential damping).
-   - Bottom dock: Node selection palette, view controls (reset camera, toggle grid, toggle shadows), node count.
+- [x] **Phase 1: Foundation & HD-2D Isometric 32x32 Engine**
+  - [x] Scaled isometric grid to 32x32 tiles.
+  - [x] Strict hazard borders confined strictly to outer boundary perimeter coordinates.
+  - [x] Procedural pixel-art texture generator for enterprise routers, switches, APs, servers, PCs, phones, printers, and AGV robots.
+- [x] **Phase 2: 3D Catenary Cables & Deterministic Packet Engine**
+  - [x] Port-to-port catenary curve physics with RJ-45 boot colors.
+  - [x] InstancedMesh GPU packet rendering with protocol-specific glows (HTTP, HTTPS, DNS, SSH, SQL, DDOS).
+  - [x] Packet drop spark explosions and FIFO buffer queue overflow protection.
+- [x] **Phase 3: Cisco Enterprise Features & Deep Inspection**
+  - [x] Interactive VLAN assignment (Data VLAN 10, Voice VLAN 20, IoT VLAN 30, Server VLAN 50).
+  - [x] Next-Gen Firewall ACL rule chain editor (`ALLOW` / `DROP`).
+  - [x] Mobile bottom-sheet inspector with grab bar and touch-friendly controls.
+- [x] **Phase 4: Campaign Scenarios & Chaos Engineering**
+  - [x] Scenario Selector modal featuring Free Homelab Sandbox + 4 structured puzzle missions:
+    1. First Homelab Setup (Unwired starter rack)
+    2. DDoS Scrubbing Center (Firewall ACL protection)
+    3. Load Balancing the Slashdot Effect (Multi-server clustering)
+    4. VLAN Database Isolation (Segmenting sensitive database tier)
+  - [x] SLA Uptime Gauge (requiring $\ge 99.0\%$ SLA for 30s) and hardware budgeting ($).
+  - [x] Chaos Monkey fault injector (Sever Cable, 100G DDoS Spike, Kernel Panic).
+- [x] **Phase 5: Cisco Tycoon Economy, Web Audio & Mobile Polish**
+  - [x] Synthesized Web Audio API sound effects (`AudioManager.ts`) and cyberpunk synth drone.
+  - [x] Animated cyberpunk booting screen with diagnostic progress bar.
+  - [x] 5-step interactive onboarding tutorial explaining Cisco concepts and tycoon loop.
+  - [x] Multi-touch pinch-to-zoom and touch pan support for mobile and tablet browsers.
+  - [x] Tycoon cash accumulation loop: connected end devices generate revenue ($/s); disconnected devices lose productivity.
