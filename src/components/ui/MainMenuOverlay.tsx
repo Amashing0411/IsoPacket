@@ -63,7 +63,10 @@ export const MainMenuOverlay: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 w-full">
           {/* 1. Defend the Core */}
           <button
-            onClick={() => enterDefenseMode()}
+            onClick={() => {
+              enterDefenseMode();
+              (window as any).__resetIsoCamera?.();
+            }}
             onMouseEnter={() => SoundFX.playClick(600)}
             className="group relative flex flex-col text-left p-5 sm:p-6 rounded-xl border border-rose-500/50 hover:border-rose-400 bg-gradient-to-b from-slate-900/90 via-[#180e1a]/90 to-slate-950/95 shadow-[0_0_25px_rgba(244,63,94,0.15)] hover:shadow-[0_0_35px_rgba(244,63,94,0.35)] transition-all transform hover:-translate-y-1.5 backdrop-blur-md cursor-pointer"
           >
@@ -87,7 +90,10 @@ export const MainMenuOverlay: React.FC = () => {
 
           {/* 2. Network Academy */}
           <button
-            onClick={() => enterAcademyMode()}
+            onClick={() => {
+              enterAcademyMode();
+              (window as any).__resetIsoCamera?.();
+            }}
             onMouseEnter={() => SoundFX.playClick(700)}
             className="group relative flex flex-col text-left p-5 sm:p-6 rounded-xl border border-indigo-500/50 hover:border-indigo-400 bg-gradient-to-b from-slate-900/90 via-[#101428]/90 to-slate-950/95 shadow-[0_0_25px_rgba(99,102,241,0.15)] hover:shadow-[0_0_35px_rgba(99,102,241,0.35)] transition-all transform hover:-translate-y-1.5 backdrop-blur-md cursor-pointer"
           >
@@ -111,7 +117,10 @@ export const MainMenuOverlay: React.FC = () => {
 
           {/* 3. Homelab Sandbox */}
           <button
-            onClick={() => enterSandboxMode()}
+            onClick={() => {
+              enterSandboxMode();
+              (window as any).__resetIsoCamera?.();
+            }}
             onMouseEnter={() => SoundFX.playClick(800)}
             className="group relative flex flex-col text-left p-5 sm:p-6 rounded-xl border border-cyan-500/50 hover:border-cyan-400 bg-gradient-to-b from-slate-900/90 via-[#0a1b24]/90 to-slate-950/95 shadow-[0_0_25px_rgba(6,182,212,0.15)] hover:shadow-[0_0_35px_rgba(6,182,212,0.35)] transition-all transform hover:-translate-y-1.5 backdrop-blur-md cursor-pointer"
           >

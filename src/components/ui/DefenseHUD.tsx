@@ -88,6 +88,18 @@ export const DefenseHUD: React.FC = () => {
             <span>MENU</span>
           </button>
 
+          <button
+            onClick={() => {
+              (window as any).__resetIsoCamera?.();
+              SoundFX.playClick(900);
+            }}
+            title="Recenter & lock isometric perspective (or double-click canvas)"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-700/80 bg-slate-900/90 hover:bg-slate-800 text-xs font-semibold text-cyan-400 transition-all shadow-md backdrop-blur-sm cursor-pointer"
+          >
+            <span>🎯</span>
+            <span className="hidden sm:inline">CENTER</span>
+          </button>
+
           {/* Core Health Bar */}
           <div className="flex items-center gap-2.5 px-4 py-2 rounded-xl border border-cyan-500/40 bg-slate-950/90 shadow-[0_0_15px_rgba(6,182,212,0.2)] backdrop-blur-md">
             <span className="text-base">🛡️</span>

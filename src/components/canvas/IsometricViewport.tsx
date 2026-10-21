@@ -100,8 +100,9 @@ export const IsometricViewport: React.FC = () => {
     scene.fog = new THREE.Fog('#0d1527', 260, 520);
 
     const aspect = container.clientWidth / container.clientHeight;
-    // Calibrated orthographic frustum so zoom: 38 yields the crisp, requested 32x32 framing
-    const frustumSize = 1140;
+    // Calibrated orthographic frustum: base 32 units matches 32x32 isometric grid prominently
+    const baseFrustum = 32;
+    const frustumSize = aspect < 1.35 ? baseFrustum * (1.35 / aspect) : baseFrustum;
     const camera = new THREE.OrthographicCamera(
       (-frustumSize * aspect) / 2,
       (frustumSize * aspect) / 2,
@@ -119,8 +120,8 @@ export const IsometricViewport: React.FC = () => {
     const cameraTarget = new THREE.Vector3(0, 0, 0);
     const targetCameraPos = new THREE.Vector3(ISO_X, ISO_Y, ISO_Z);
     camera.lookAt(cameraTarget);
-    camera.zoom = 38;
-    let targetZoom = 38;
+    camera.zoom = 1.05;
+    let targetZoom = 1.05;
 
     const renderer = new THREE.WebGLRenderer({
       powerPreference: 'high-performance',
@@ -1339,11 +1340,15 @@ export const IsometricViewport: React.FC = () => {
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
       const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
-      targetZoom = THREE.MathUtils.clamp(targetZoom * zoomFactor, 0.45, 3.5);
+      targetZoom = THREE.MathUtils.clamp(targetZoom * zoomFactor, 0.55, 3.5);
     };
 
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault();
+    };
+
+    const handleDblClick = () => {
+      (window as any).__resetIsoCamera?.();
     };
 
     // Mobile Touch Pinch-To-Zoom & Touch Pan
@@ -1372,7 +1377,7 @@ export const IsometricViewport: React.FC = () => {
         const [t1, t2] = Array.from(activeTouches.values());
         const currentDist = Math.hypot(t1.x - t2.x, t1.y - t2.y);
         const factor = currentDist / initialPinchDist;
-        targetZoom = THREE.MathUtils.clamp(pinchStartZoom * factor, 0.45, 2.5);
+        targetZoom = THREE.MathUtils.clamp(pinchStartZoom * factor, 0.55, 3.5);
       }
     };
 
@@ -1394,6 +1399,7 @@ export const IsometricViewport: React.FC = () => {
     window.addEventListener('touchend', handleTouchEnd, { passive: true });
     dom.addEventListener('wheel', handleWheel, { passive: false });
     dom.addEventListener('contextmenu', handleContextMenu);
+    dom.addEventListener('dblclick', handleDblClick);
 
     // --- 7. Window Resize Handling ---
     const handleResize = () => {
@@ -1401,11 +1407,12 @@ export const IsometricViewport: React.FC = () => {
       const width = container.clientWidth;
       const height = container.clientHeight;
       const newAspect = width / height;
+      const currentFrustum = newAspect < 1.35 ? baseFrustum * (1.35 / newAspect) : baseFrustum;
 
-      camera.left = (-frustumSize * newAspect) / 2;
-      camera.right = (frustumSize * newAspect) / 2;
-      camera.top = frustumSize / 2;
-      camera.bottom = -frustumSize / 2;
+      camera.left = (-currentFrustum * newAspect) / 2;
+      camera.right = (currentFrustum * newAspect) / 2;
+      camera.top = currentFrustum / 2;
+      camera.bottom = -currentFrustum / 2;
       camera.updateProjectionMatrix();
 
       renderer.setSize(width, height);
@@ -1418,6 +1425,7 @@ export const IsometricViewport: React.FC = () => {
     let animationFrameId: number;
     let statsTimer = 0;
     let lastTime = performance.now();
+    let lastMode = useGameModeStore.getState().currentMode;
 
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
@@ -1467,13 +1475,20 @@ export const IsometricViewport: React.FC = () => {
 
       const time = performance.now() * 0.001;
 
-      // 4. Cinematic Camera Sweep in Title Menu Mode
-      const isTitleMode = useGameModeStore.getState().currentMode === 'title';
+      // 4. Cinematic Camera Sweep in Title Menu Mode & Seamless Transition
+      const currentMode = useGameModeStore.getState().currentMode;
+      const isTitleMode = currentMode === 'title';
       if (isTitleMode) {
-        targetCameraPos.set(Math.cos(time * 0.12) * 85, 68, Math.sin(time * 0.12) * 85);
+        targetCameraPos.set(Math.cos(time * 0.12) * 36, 32, Math.sin(time * 0.12) * 36);
         cameraTarget.set(0, 0, 0);
-        targetZoom = 1.15;
+        targetZoom = 0.88;
+      } else if (lastMode === 'title') {
+        // Just transitioned from title into gameplay! Force immediate reset to locked isometric view
+        cameraTarget.set(0, 0, 0);
+        targetCameraPos.set(ISO_X, ISO_Y, ISO_Z);
+        targetZoom = 1.05;
       }
+      lastMode = currentMode;
 
       // 5. Update Tower Defense Engine & Entities
       globalDefenseEngine.update(delta, currentNodes, currentCables);
@@ -1523,7 +1538,7 @@ export const IsometricViewport: React.FC = () => {
     (window as any).__resetIsoCamera = () => {
       cameraTarget.set(0, 0, 0);
       targetCameraPos.set(ISO_X, ISO_Y, ISO_Z);
-      targetZoom = 38;
+      targetZoom = 1.05;
     };
 
     // --- Cleanup on unmount ---
@@ -1537,6 +1552,7 @@ export const IsometricViewport: React.FC = () => {
       window.removeEventListener('touchend', handleTouchEnd);
       dom.removeEventListener('wheel', handleWheel);
       dom.removeEventListener('contextmenu', handleContextMenu);
+      dom.removeEventListener('dblclick', handleDblClick);
       resizeObserver.disconnect();
 
       cableSystem.dispose();
