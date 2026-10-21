@@ -92,28 +92,30 @@ export const IsometricViewport: React.FC = () => {
 
     // --- 1. Scene, Camera & Renderer Setup ---
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color('#0b111e');
-    scene.fog = new THREE.Fog('#0b111e', 180, 420);
+    // High-tech sleek NOC datacenter background (soft dark slate blue, high contrast against tiles)
+    scene.background = new THREE.Color('#0d1527');
+    scene.fog = new THREE.Fog('#0d1527', 260, 520);
 
     const aspect = container.clientWidth / container.clientHeight;
-    const frustumSize = 58;
+    const frustumSize = 52;
     const camera = new THREE.OrthographicCamera(
       (-frustumSize * aspect) / 2,
       (frustumSize * aspect) / 2,
       frustumSize / 2,
       -frustumSize / 2,
       0.1,
-      500
+      600
     );
 
     // Precise Isometric Camera Positioning
-    const isoDistance = 70;
+    const isoDistance = 75;
     camera.position.set(isoDistance, isoDistance * 0.95, isoDistance);
     const cameraTarget = new THREE.Vector3(0, 0, 0);
     const targetCameraPos = camera.position.clone();
     camera.lookAt(cameraTarget);
-    camera.zoom = 1.0;
-    let targetZoom = 1.0;
+    // Start at a comfortable 1.35x zoom so central homelab racks are large and legible
+    camera.zoom = 1.35;
+    let targetZoom = 1.35;
 
     const renderer = new THREE.WebGLRenderer({
       powerPreference: 'high-performance',
@@ -124,7 +126,7 @@ export const IsometricViewport: React.FC = () => {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.5;
+    renderer.toneMappingExposure = 2.0; // Bright, luminous dynamic range
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFShadowMap;
 
@@ -132,34 +134,43 @@ export const IsometricViewport: React.FC = () => {
 
     // Studio Environment Reflections
     const pmremGenerator = new THREE.PMREMGenerator(renderer);
-    scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+    scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.08).texture;
     pmremGenerator.dispose();
 
-    // --- 2. Lighting Rig ---
-    const ambientLight = new THREE.AmbientLight('#e2e8f0', 1.4);
+    // --- 2. High-Clarity Datacenter Lighting Rig ---
+    // Warm ambient foundation
+    const ambientLight = new THREE.AmbientLight('#e2e8f0', 2.3);
     scene.add(ambientLight);
 
-    const dirLight = new THREE.DirectionalLight('#ffffff', 2.4);
-    dirLight.position.set(40, 65, 30);
+    // Primary key directional sun
+    const dirLight = new THREE.DirectionalLight('#ffffff', 3.4);
+    dirLight.position.set(50, 80, 45);
     dirLight.castShadow = true;
     dirLight.shadow.mapSize.width = 2048;
     dirLight.shadow.mapSize.height = 2048;
     dirLight.shadow.camera.near = 0.5;
-    dirLight.shadow.camera.far = 160;
-    const shadowD = 40;
+    dirLight.shadow.camera.far = 220;
+    const shadowD = 55;
     dirLight.shadow.camera.left = -shadowD;
     dirLight.shadow.camera.right = shadowD;
     dirLight.shadow.camera.top = shadowD;
     dirLight.shadow.camera.bottom = -shadowD;
-    dirLight.shadow.bias = -0.0004;
+    dirLight.shadow.bias = -0.0003;
     dirLight.shadow.normalBias = 0.02;
     scene.add(dirLight);
 
-    const hemiLight = new THREE.HemisphereLight('#7dd3fc', '#1e293b', 1.1);
+    // Cyber blue fill light from opposing angle (eliminates pitch-black shadows)
+    const fillLight = new THREE.DirectionalLight('#38bdf8', 1.6);
+    fillLight.position.set(-45, 60, -35);
+    scene.add(fillLight);
+
+    // Soft sky-to-ground hemisphere light
+    const hemiLight = new THREE.HemisphereLight('#bae6fd', '#334155', 1.8);
     scene.add(hemiLight);
 
-    const rimLight = new THREE.DirectionalLight('#818cf8', 1.1);
-    rimLight.position.set(-40, 35, -40);
+    // Violet rim accent light
+    const rimLight = new THREE.DirectionalLight('#c084fc', 1.3);
+    rimLight.position.set(-35, 45, 50);
     scene.add(rimLight);
 
     // --- 3. Floor Grid Generation ---
@@ -176,18 +187,18 @@ export const IsometricViewport: React.FC = () => {
     const floorMaterials = {
       raised: new THREE.MeshStandardMaterial({
         map: raisedTex,
-        roughness: 0.65,
-        metalness: 0.35,
+        roughness: 0.42,
+        metalness: 0.22,
       }),
       vent: new THREE.MeshStandardMaterial({
         map: ventTex,
-        roughness: 0.8,
-        metalness: 0.2,
+        roughness: 0.52,
+        metalness: 0.22,
       }),
       hazard: new THREE.MeshStandardMaterial({
         map: hazardTex,
-        roughness: 0.5,
-        metalness: 0.4,
+        roughness: 0.38,
+        metalness: 0.28,
       }),
     };
 
@@ -216,9 +227,9 @@ export const IsometricViewport: React.FC = () => {
       GRID_SIZE * TILE_SIZE + 4
     );
     const subFloorMat = new THREE.MeshStandardMaterial({
-      color: '#0e121a',
-      roughness: 0.9,
-      metalness: 0.1,
+      color: '#162032',
+      roughness: 0.75,
+      metalness: 0.15,
     });
     const subFloorMesh = new THREE.Mesh(subFloorGeo, subFloorMat);
     subFloorMesh.position.set(0, -0.42, 0);
@@ -385,6 +396,7 @@ export const IsometricViewport: React.FC = () => {
           depthWrite: false,
         });
         const apRing = new THREE.Mesh(apRingGeo, apRingMat);
+        apRing.name = 'ap_coverage_ring';
         apRing.position.y = 0.025;
         group.add(apRing);
       }
@@ -637,7 +649,7 @@ export const IsometricViewport: React.FC = () => {
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
       const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
-      targetZoom = THREE.MathUtils.clamp(targetZoom * zoomFactor, 0.45, 2.5);
+      targetZoom = THREE.MathUtils.clamp(targetZoom * zoomFactor, 0.45, 3.5);
     };
 
     const handleContextMenu = (e: MouseEvent) => {
@@ -763,8 +775,8 @@ export const IsometricViewport: React.FC = () => {
         packetSystem.triggerDropSparks(dropEvents);
       }
 
-      // 4. Subtle pulsating LEDs on placed nodes
-      const time = clock.getElapsedTime();
+      // 4. Subtle pulsating LEDs and Wi-Fi AP broadcast waves
+      const time = performance.now() * 0.001;
       activeNodeGroups.forEach((grp) => {
         const led = grp.children.find(
           (c) => c instanceof THREE.Mesh && c.geometry.type === 'BoxGeometry' && c.position.y > 0.6
@@ -772,6 +784,13 @@ export const IsometricViewport: React.FC = () => {
         if (led && led instanceof THREE.Mesh) {
           const s = 1.0 + Math.sin(time * 6 + grp.position.x) * 0.15;
           led.scale.set(s, s, s);
+        }
+
+        // Wi-Fi 6 AP radio beacon ripple
+        const apRing = grp.children.find((c) => c.name === 'ap_coverage_ring');
+        if (apRing && apRing instanceof THREE.Mesh) {
+          const wave = (Math.sin(time * 3) + 1) * 0.5;
+          (apRing.material as THREE.MeshBasicMaterial).opacity = 0.25 + wave * 0.2;
         }
       });
 
@@ -788,7 +807,7 @@ export const IsometricViewport: React.FC = () => {
     (window as any).__resetIsoCamera = () => {
       cameraTarget.set(0, 0, 0);
       targetCameraPos.set(isoDistance, isoDistance * 0.95, isoDistance);
-      targetZoom = 1.0;
+      targetZoom = 1.35;
     };
 
     // --- Cleanup on unmount ---

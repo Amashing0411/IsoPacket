@@ -25,6 +25,7 @@ import {
   Printer,
   Camera,
   Bot,
+  Sparkles,
 } from 'lucide-react';
 import { useTopologyStore } from '../../state/useTopologyStore';
 import { useScenarioStore } from '../../state/useScenarioStore';
@@ -45,6 +46,7 @@ export const BottomToolbar: React.FC<BottomToolbarProps> = () => {
   const wiringSourceNodeId = useTopologyStore((s) => s.wiringSourceNodeId);
   const setWiringSourceNodeId = useTopologyStore((s) => s.setWiringSourceNodeId);
   const rotateNode = useTopologyStore((s) => s.rotateNode);
+  const startFromScratch = useTopologyStore((s) => s.startFromScratch);
   const loadPresetHomelab = useTopologyStore((s) => s.loadPresetHomelab);
   const clearTopology = useTopologyStore((s) => s.clearTopology);
 
@@ -313,13 +315,25 @@ export const BottomToolbar: React.FC<BottomToolbarProps> = () => {
             <button
               onClick={() => {
                 AudioManager.playClick(900);
+                startFromScratch();
+              }}
+              title="Start From Scratch: ISP Gateway + Starter PC ($500 Budget)"
+              className="px-2.5 py-1.5 rounded-xl bg-emerald-950/60 hover:bg-emerald-900/80 border border-emerald-500/40 text-emerald-300 text-xs font-mono flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="hidden sm:inline">From Scratch</span>
+            </button>
+
+            <button
+              onClick={() => {
+                AudioManager.playClick(900);
                 loadPresetHomelab();
               }}
-              title="Reset to 32x32 Cisco Homelab Preset"
+              title="Load Full 32x32 Cisco Homelab Showcase"
               className="px-2.5 py-1.5 rounded-xl bg-cyan-950/60 hover:bg-cyan-900/80 border border-cyan-500/40 text-cyan-300 text-xs font-mono flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               <FolderDown className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Preset</span>
+              <span className="hidden sm:inline">Enterprise Demo</span>
             </button>
 
             <button

@@ -40,17 +40,27 @@ class PixelTextureFactoryClass {
     canvas.height = size;
     const ctx = canvas.getContext('2d')!;
 
-    // Base dark slate metal
-    ctx.fillStyle = '#1e2430';
+    // Base enterprise datacenter slate metal
+    ctx.fillStyle = '#222c3a';
     ctx.fillRect(0, 0, size, size);
 
     if (variant === 'raised') {
-      // Inner panel bevel
-      ctx.fillStyle = '#262f3e';
+      // Inner panel bevel with clean contrast
+      ctx.fillStyle = '#2e3b4e';
       ctx.fillRect(2, 2, size - 4, size - 4);
 
+      // Light reflection highlight on top/left edges
+      ctx.fillStyle = '#3f4f66';
+      ctx.fillRect(2, 2, size - 4, 2);
+      ctx.fillRect(2, 2, 2, size - 4);
+
+      // Shadow on bottom/right edges
+      ctx.fillStyle = '#1c2430';
+      ctx.fillRect(2, size - 4, size - 4, 2);
+      ctx.fillRect(size - 4, 2, 2, size - 4);
+
       // Subtle metallic noise grid
-      ctx.fillStyle = '#1a202c';
+      ctx.fillStyle = '#263242';
       for (let y = 6; y < size - 6; y += 8) {
         for (let x = 6; x < size - 6; x += 8) {
           ctx.fillRect(x, y, 4, 4);
@@ -58,49 +68,56 @@ class PixelTextureFactoryClass {
       }
 
       // Corner rivets / grounding screws
-      ctx.fillStyle = '#475569';
+      ctx.fillStyle = '#64748b';
       const corners = [
         [4, 4],
-        [size - 6, 4],
-        [4, size - 6],
-        [size - 6, size - 6],
+        [size - 7, 4],
+        [4, size - 7],
+        [size - 7, size - 7],
       ];
       corners.forEach(([cx, cy]) => {
         ctx.fillRect(cx, cy, 3, 3);
-        ctx.fillStyle = '#94a3b8';
+        ctx.fillStyle = '#f1f5f9';
         ctx.fillRect(cx + 1, cy + 1, 1, 1);
-        ctx.fillStyle = '#475569';
+        ctx.fillStyle = '#64748b';
       });
 
       // Outer bezel line
-      ctx.strokeStyle = '#0f172a';
+      ctx.strokeStyle = '#18202c';
       ctx.lineWidth = 1;
       ctx.strokeRect(0.5, 0.5, size - 1, size - 1);
 
-      // Subtle cyan electrical trace
-      ctx.fillStyle = 'rgba(56, 189, 248, 0.12)';
+      // Crisp glowing cyan electrical trace
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.35)';
       ctx.fillRect(size / 2 - 1, 4, 2, size - 8);
       ctx.fillRect(4, size / 2 - 1, size - 8, 2);
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillRect(size / 2 - 1, size / 2 - 1, 2, 2);
     } else if (variant === 'vent') {
       // Perforated airflow cooling tile
-      ctx.fillStyle = '#161d27';
+      ctx.fillStyle = '#283546';
       ctx.fillRect(2, 2, size - 4, size - 4);
 
-      ctx.fillStyle = '#090d14';
+      // Vent interior mesh
+      ctx.fillStyle = '#111827';
       for (let y = 6; y < size - 6; y += 4) {
         for (let x = 6; x < size - 6; x += 4) {
           ctx.fillRect(x, y, 2, 2);
         }
       }
 
-      ctx.strokeStyle = '#334155';
+      // Sub-floor cold-aisle blue glow under vents
+      ctx.fillStyle = 'rgba(14, 165, 233, 0.25)';
+      ctx.fillRect(4, 4, size - 8, size - 8);
+
+      ctx.strokeStyle = '#475569';
       ctx.strokeRect(1.5, 1.5, size - 3, size - 3);
     } else if (variant === 'hazard') {
       // Warning caution stripes
       ctx.fillStyle = '#1e2430';
       ctx.fillRect(0, 0, size, size);
 
-      ctx.fillStyle = '#eab308';
+      ctx.fillStyle = '#facc15'; // Bright high-vis hazard yellow
       for (let i = -size; i < size * 2; i += 16) {
         ctx.beginPath();
         ctx.moveTo(i, 0);
@@ -832,20 +849,20 @@ class PixelTextureFactoryClass {
   }
 
   private drawHardwareTop(ctx: CanvasRenderingContext2D, s: number, type: HardwareNodeType) {
-    // Top cover lid: Brushed dark alloy with laser-etched cooling vents and serial tags
-    ctx.fillStyle = '#212733';
+    // Top cover lid: Brushed datacenter alloy with laser-etched cooling vents and serial tags
+    ctx.fillStyle = '#2b3545';
     ctx.fillRect(0, 0, s, s);
 
     // Beveled lid plate
-    ctx.fillStyle = '#2b3342';
+    ctx.fillStyle = '#374357';
     ctx.fillRect(4, 4, s - 8, s - 8);
 
     // Dark inset cooling grilles
-    ctx.fillStyle = '#151921';
+    ctx.fillStyle = '#1e2633';
     ctx.fillRect(16, 16, s - 32, s - 32);
 
     // Perforations
-    ctx.fillStyle = '#0c0f14';
+    ctx.fillStyle = '#111722';
     for (let y = 20; y < s - 20; y += 4) {
       for (let x = 20; x < s - 20; x += 4) {
         ctx.fillRect(x, y, 2, 2);
@@ -870,13 +887,13 @@ class PixelTextureFactoryClass {
 
   private drawHardwareSide(ctx: CanvasRenderingContext2D, s: number, type: HardwareNodeType) {
     // Side panel with rack rail mounting channels
-    ctx.fillStyle = '#1a1f29';
+    ctx.fillStyle = '#26303e';
     ctx.fillRect(0, 0, s, s);
 
     // Slide rail channel
-    ctx.fillStyle = '#0f131a';
+    ctx.fillStyle = '#18202c';
     ctx.fillRect(4, s / 2 - 8, s - 8, 16);
-    ctx.fillStyle = '#333e52';
+    ctx.fillStyle = '#475569';
     ctx.fillRect(6, s / 2 - 4, s - 12, 8);
 
     // Mounting screw points

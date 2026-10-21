@@ -12,6 +12,8 @@ import {
   CableConnection,
   AclRule,
 } from '../engine/types';
+import { globalSimulationEngine } from '../engine/SimulationEngine';
+import { AudioManager } from '../utils/AudioManager';
 
 export const GRID_SIZE = 32;
 export const TILE_SIZE = 2.0; // World units per grid tile
@@ -56,6 +58,7 @@ interface TopologyState {
   updateNodeVlan: (id: string, vlanId: number) => void;
   rotateNode: (id: string) => void;
   clearTopology: () => void;
+  startFromScratch: () => void;
   loadPresetHomelab: () => void;
 
   // Cable Mutations
@@ -201,6 +204,18 @@ function generateNode(type: HardwareNodeType, gridX: number, gridZ: number, cust
   };
 }
 
+function createStarterTopology(): { nodes: PlacedNode[]; cables: CableConnection[] } {
+  nodeIdCounter = 1;
+  cableIdCounter = 1;
+
+  // Center of 32x32 grid is (16, 16)
+  // Clean bootstrap from scratch: ISP WAN Fiber Gateway and an unconnected starter PC
+  const gw = generateNode('gateway', 16, 16, 'ISP WAN Fiber Gateway');
+  const pc = generateNode('pc', 16, 13, 'Starter Office PC');
+
+  return { nodes: [gw, pc], cables: [] };
+}
+
 function createPresetTopology(): { nodes: PlacedNode[]; cables: CableConnection[] } {
   nodeIdCounter = 1;
   cableIdCounter = 1;
@@ -331,7 +346,8 @@ function createPresetTopology(): { nodes: PlacedNode[]; cables: CableConnection[
 }
 
 export const useTopologyStore = create<TopologyState>((set, get) => {
-  const initial = createPresetTopology();
+  // Start from scratch: 1 Gateway + 1 unconnected PC, $500 cash, ready to build!
+  const initial = createStarterTopology();
 
   return {
     nodes: initial.nodes,
@@ -362,6 +378,14 @@ export const useTopologyStore = create<TopologyState>((set, get) => {
       const existing = get().nodes.find((n) => n.gridX === gridX && n.gridZ === gridZ);
       if (existing) return null;
 
+      const def = HARDWARE_DEFS[type];
+      // Check if player can afford this hardware
+      if (!globalSimulationEngine.spendCash(def.cost)) {
+        AudioManager.playPacketDrop();
+        return null;
+      }
+
+      AudioManager.playClick(1050);
       const newNode = generateNode(type, gridX, gridZ);
       set((state) => ({
         nodes: [...state.nodes, newNode],
@@ -384,6 +408,13 @@ export const useTopologyStore = create<TopologyState>((set, get) => {
     },
 
     deleteNode: (id) => {
+      const node = get().nodes.find((n) => n.id === id);
+      if (node) {
+        // Refund 50% salvage value back to tycoon cash
+        const def = HARDWARE_DEFS[node.type];
+        globalSimulationEngine.addCash(Math.floor(def.cost * 0.5));
+      }
+
       set((state) => ({
         nodes: state.nodes.filter((n) => n.id !== id),
         cables: state.cables.filter((c) => c.fromNodeId !== id && c.toNodeId !== id),
@@ -425,6 +456,7 @@ export const useTopologyStore = create<TopologyState>((set, get) => {
     },
 
     clearTopology: () => {
+      globalSimulationEngine.resetStats(500);
       set({
         nodes: [],
         cables: [],
@@ -434,12 +466,26 @@ export const useTopologyStore = create<TopologyState>((set, get) => {
       });
     },
 
+    startFromScratch: () => {
+      globalSimulationEngine.resetStats(500);
+      const starter = createStarterTopology();
+      set({
+        nodes: starter.nodes,
+        cables: starter.cables,
+        selectedNodeId: starter.nodes[0]?.id || null,
+        selectedCableId: null,
+        wiringSourceNodeId: null,
+        activeTool: 'select',
+      });
+    },
+
     loadPresetHomelab: () => {
+      globalSimulationEngine.resetStats(5000); // Ample sandbox funds for demo
       const preset = createPresetTopology();
       set({
         nodes: preset.nodes,
         cables: preset.cables,
-        selectedNodeId: preset.nodes[0].id,
+        selectedNodeId: preset.nodes[0]?.id || null,
         selectedCableId: null,
         wiringSourceNodeId: null,
         activeTool: 'select',
@@ -461,12 +507,22 @@ export const useTopologyStore = create<TopologyState>((set, get) => {
       );
       if (existing) return existing;
 
+      // Check cable cost ($5 copper, $15 fiber)
+      const isFiber = cableType === 'fiber' || nodeA.type === 'gateway' || nodeB.type === 'gateway';
+      const cableCost = isFiber ? 15 : 5;
+      if (!globalSimulationEngine.spendCash(cableCost)) {
+        AudioManager.playPacketDrop();
+        return null;
+      }
+
+      AudioManager.playSnap();
+
       // Find available or default port
       const portA = nodeA.ports[0]?.id || `port_${fromNodeId}_0`;
       const portB = nodeB.ports[0]?.id || `port_${toNodeId}_0`;
 
       let color = '#3b82f6'; // Cat6 Blue
-      if (cableType === 'fiber' || nodeA.type === 'gateway' || nodeB.type === 'gateway') {
+      if (isFiber) {
         cableType = 'fiber';
         color = '#eab308'; // Fiber Yellow
       } else if (nodeA.type === 'firewall' || nodeB.type === 'firewall') {
@@ -484,7 +540,7 @@ export const useTopologyStore = create<TopologyState>((set, get) => {
         toNodeId,
         toPortId: portB,
         cableType,
-        bandwidthMbps: cableType === 'fiber' ? 10000 : 1000,
+        bandwidthMbps: isFiber ? 10000 : 1000,
         currentThroughputMbps: 0,
         packetLossRate: 0,
         latencyMs: Number((Math.random() * 0.8 + 0.4).toFixed(1)),

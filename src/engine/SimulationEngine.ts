@@ -81,7 +81,7 @@ export class SimulationEngine {
   };
 
   // Tycoon Economy & Productivity State
-  private cash = 2500;
+  private cash = 500;
   private totalRevenue = 0;
   private revenuePerSec = 0;
   private productivityScore = 100;
@@ -110,6 +110,10 @@ export class SimulationEngine {
     this.cash += amount;
   }
 
+  public setCash(amount: number) {
+    this.cash = amount;
+  }
+
   /**
    * Set active traffic profile from scenario definition
    */
@@ -121,7 +125,9 @@ export class SimulationEngine {
   /**
    * Reset all simulation statistics and inflight queues for new scenario/replay
    */
-  public resetStats() {
+  public resetStats(initialCash = 500) {
+    this.cash = initialCash;
+    this.totalRevenue = 0;
     this.totalDelivered = 0;
     this.totalDropped = 0;
     this.droppedByReason = {

@@ -150,9 +150,9 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onShowHelp, onShowTutorial
           className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-950/50 border border-emerald-500/40 text-emerald-300 text-xs font-bold"
         >
           <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
-          <span>${stats.cash || 2500}</span>
+          <span>${stats.cash !== undefined ? stats.cash : 500}</span>
           <span className="text-[10px] text-emerald-400/90 font-medium ml-0.5">
-            (+${stats.revenuePerSec || 0}/s)
+            (+${stats.revenuePerSec !== undefined ? stats.revenuePerSec : 0}/s)
           </span>
         </div>
 

@@ -105,35 +105,11 @@ export const SCENARIOS: Record<ScenarioId, ScenarioDefinition> = {
     durationSecondsToWin: 0,
     starterNodes: () => {
       idCounter = 1;
-      const gw = makeNode('gateway', 3, 4, 'WAN Fiber Gateway');
-      const fw = makeNode('firewall', 5, 4, 'Next-Gen Firewall');
-      const rtr = makeNode('router', 7, 4, 'Core L3 Router');
-      const sw = makeNode('switch', 9, 6, 'Managed L2 Switch');
-      const srv1 = makeNode('server', 11, 4, 'Web Server #1', 10);
-      const srv2 = makeNode('server', 11, 6, 'Web Server #2', 10);
-      const db = makeNode('database', 11, 8, 'Primary NVMe Database', 20);
-      const cli = makeNode('client', 5, 8, 'Workstation Terminal', 30);
-      return [gw, fw, rtr, sw, srv1, srv2, db, cli];
+      const gw = makeNode('gateway', 16, 16, 'ISP WAN Fiber Gateway');
+      const pc = makeNode('pc', 16, 13, 'Starter Office PC', 10);
+      return [gw, pc];
     },
-    starterCables: (nodes) => {
-      const gw = nodes.find((n) => n.type === 'gateway')!;
-      const fw = nodes.find((n) => n.type === 'firewall')!;
-      const rtr = nodes.find((n) => n.type === 'router')!;
-      const sw = nodes.find((n) => n.type === 'switch')!;
-      const srv1 = nodes[4];
-      const srv2 = nodes[5];
-      const db = nodes[6];
-      const cli = nodes[7];
-      return [
-        makeCable(gw, fw, 'fiber'),
-        makeCable(fw, rtr, 'cat6'),
-        makeCable(rtr, sw, 'cat6'),
-        makeCable(sw, srv1, 'cat6'),
-        makeCable(sw, srv2, 'cat6'),
-        makeCable(sw, db, 'management'),
-        makeCable(rtr, cli, 'cat6'),
-      ];
-    },
+    starterCables: () => [],
     trafficProfile: {
       spawnInterval: 0.45,
       allowDdos: false,
@@ -163,10 +139,10 @@ export const SCENARIOS: Record<ScenarioId, ScenarioDefinition> = {
     durationSecondsToWin: 30,
     starterNodes: () => {
       idCounter = 1;
-      const gw = makeNode('gateway', 3, 4, 'WAN Fiber Gateway');
-      const rtr = makeNode('router', 7, 4, 'Core L3 Router');
-      const sw = makeNode('switch', 9, 6, 'Managed L2 Switch');
-      const srv = makeNode('server', 12, 6, 'Production Web Blade', 10);
+      const gw = makeNode('gateway', 12, 16, 'WAN Fiber Gateway');
+      const rtr = makeNode('router', 15, 16, 'Core L3 Router');
+      const sw = makeNode('switch', 18, 16, 'Managed L2 Switch');
+      const srv = makeNode('server', 21, 16, 'Production Web Blade', 10);
       return [gw, rtr, sw, srv];
     },
     starterCables: () => [], // Completely unwired challenge!
@@ -186,7 +162,7 @@ export const SCENARIOS: Record<ScenarioId, ScenarioDefinition> = {
     briefing: [
       '• Threat Alert: Massive incoming DDoS packet waves from the WAN.',
       '• Delete the unshielded direct cable between Gateway and Switch.',
-      '• Deploy a Next-Gen Firewall at tile [5, 4] (cost: $500).',
+      '• Deploy a Next-Gen Firewall at tile [15, 16] (cost: $220).',
       '• Wire: Gateway -> Firewall -> Switch.',
       '• Configure the Firewall ACL rule: ACTION: DROP | PROTOCOL: DDOS.',
       '• Watch the 3D energy shield vaporize the attack traffic in real-time!',
@@ -200,9 +176,9 @@ export const SCENARIOS: Record<ScenarioId, ScenarioDefinition> = {
     durationSecondsToWin: 30,
     starterNodes: () => {
       idCounter = 1;
-      const gw = makeNode('gateway', 3, 4, 'WAN Fiber Gateway');
-      const sw = makeNode('switch', 8, 4, 'Core Switch');
-      const srv = makeNode('server', 12, 4, 'Web Blade Cluster', 10);
+      const gw = makeNode('gateway', 13, 16, 'WAN Fiber Gateway');
+      const sw = makeNode('switch', 18, 16, 'Core Switch');
+      const srv = makeNode('server', 21, 16, 'Web Blade Cluster', 10);
       return [gw, sw, srv];
     },
     starterCables: (nodes) => {
@@ -228,7 +204,7 @@ export const SCENARIOS: Record<ScenarioId, ScenarioDefinition> = {
     briefing: [
       '• Concurrency Surge: 3x normal HTTP traffic incoming from internet users.',
       '• Single web server queue depth is overflowing at 24/24 packets.',
-      '• Purchase a second 1U Web Server from the palette ($400) and place at [11, 7].',
+      '• Purchase a second 1U Web Server from the palette ($320) and place at [20, 18].',
       '• Wire a patch cable from the L2 Switch to the new Web Server.',
       '• The network will automatically distribute requests across both servers!',
     ],
@@ -241,10 +217,10 @@ export const SCENARIOS: Record<ScenarioId, ScenarioDefinition> = {
     durationSecondsToWin: 30,
     starterNodes: () => {
       idCounter = 1;
-      const gw = makeNode('gateway', 3, 4, 'WAN Fiber Gateway');
-      const fw = makeNode('firewall', 5, 4, 'Next-Gen Firewall');
-      const sw = makeNode('switch', 8, 5, 'L2 Distribution Switch');
-      const srv1 = makeNode('server', 11, 4, 'Web Server #1', 10);
+      const gw = makeNode('gateway', 12, 16, 'WAN Fiber Gateway');
+      const fw = makeNode('firewall', 15, 16, 'Next-Gen Firewall');
+      const sw = makeNode('switch', 18, 16, 'L2 Distribution Switch');
+      const srv1 = makeNode('server', 20, 14, 'Web Server #1', 10);
       return [gw, fw, sw, srv1];
     },
     starterCables: (nodes) => {
@@ -269,7 +245,7 @@ export const SCENARIOS: Record<ScenarioId, ScenarioDefinition> = {
     description:
       'Security compliance failure: Database storing customer credentials is on the same open subnet as public workstations. Segment the database onto VLAN 20 and configure strict ACLs.',
     briefing: [
-      '• Untrusted client workstation [5, 8] must NOT access Database [11, 8].',
+      '• Untrusted client workstation [14, 13] must NOT access Database [20, 18].',
       '• Only Web Servers on VLAN 10 may query the Database on VLAN 20.',
       '• Configure Firewall ACL to ALLOW SQL only to VLAN 20.',
       '• Ensure Web Servers can query database while blocking direct client queries.',
@@ -284,12 +260,12 @@ export const SCENARIOS: Record<ScenarioId, ScenarioDefinition> = {
     durationSecondsToWin: 30,
     starterNodes: () => {
       idCounter = 1;
-      const gw = makeNode('gateway', 3, 4, 'WAN Fiber Gateway');
-      const fw = makeNode('firewall', 6, 4, 'Segmentation Firewall');
-      const sw = makeNode('switch', 8, 6, 'Trunk Switch');
-      const srv = makeNode('server', 11, 4, 'Web Server', 10);
-      const db = makeNode('database', 11, 8, 'PCI-DSS Database', 20);
-      const cli = makeNode('client', 4, 8, 'Untrusted Workstation', 30);
+      const gw = makeNode('gateway', 12, 16, 'WAN Fiber Gateway');
+      const fw = makeNode('firewall', 15, 16, 'Segmentation Firewall');
+      const sw = makeNode('switch', 18, 16, 'Trunk Switch');
+      const srv = makeNode('server', 20, 14, 'Web Server', 10);
+      const db = makeNode('database', 20, 18, 'PCI-DSS Database', 20);
+      const cli = makeNode('client', 14, 13, 'Untrusted Workstation', 30);
       return [gw, fw, sw, srv, db, cli];
     },
     starterCables: (nodes) => {
