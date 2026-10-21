@@ -1086,6 +1086,11 @@ class PixelTextureFactoryClass {
       case 'camera': return '#fb7185';
       case 'robot': return '#facc15';
       case 'ap': return '#0ea5e9';
+      case 'flak': return '#ef4444';
+      case 'railgun': return '#eab308';
+      case 'cache': return '#a855f7';
+      case 'harvester': return '#facc15';
+      default: return '#38bdf8';
     }
   }
 }

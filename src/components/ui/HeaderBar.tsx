@@ -27,6 +27,7 @@ import { useTopologyStore } from '../../state/useTopologyStore';
 import { useSimulationStore } from '../../state/useSimulationStore';
 import { useScenarioStore } from '../../state/useScenarioStore';
 import { AudioManager } from '../../utils/AudioManager';
+import { useGameModeStore } from '../../state/useGameModeStore';
 
 interface HeaderBarProps {
   onShowHelp: () => void;
@@ -88,6 +89,18 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onShowHelp, onShowTutorial
     <header className="absolute top-0 left-0 right-0 z-20 pointer-events-none p-2 sm:p-3 flex flex-wrap items-center justify-between gap-2 font-mono">
       {/* Brand & Active Scenario Pill */}
       <div className="flex items-center gap-2 pointer-events-auto flex-wrap">
+        <button
+          onClick={() => {
+            const { returnToTitle } = useGameModeStore.getState();
+            returnToTitle();
+          }}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/95 hover:bg-slate-800 border border-slate-700/80 text-slate-300 text-xs font-bold shadow-xl shadow-black/40 transition-all cursor-pointer"
+          title="Return to Main Menu"
+        >
+          <span>←</span>
+          <span>MENU</span>
+        </button>
+
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#0f172a]/95 border border-cyan-500/30 text-white shadow-xl shadow-black/40">
           <div className="w-7 h-7 rounded-lg bg-cyan-500/20 border border-cyan-400/50 flex items-center justify-center text-cyan-400 flex-shrink-0">
             <Network className="w-4 h-4" />
@@ -95,10 +108,10 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ onShowHelp, onShowTutorial
           <div>
             <div className="flex items-center gap-1.5">
               <span className="font-bold text-sm tracking-wider text-cyan-300">
-                ISOPACKET
+                CYBERCORE
               </span>
               <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.2 rounded bg-cyan-950 border border-cyan-500/40 text-cyan-400 font-semibold">
-                CISCO TYCOON
+                PROTOCOL DEFENSE
               </span>
             </div>
           </div>

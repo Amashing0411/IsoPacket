@@ -88,6 +88,11 @@ export const BottomToolbar: React.FC<BottomToolbarProps> = () => {
       case 'camera': return Camera;
       case 'robot': return Bot;
       case 'client': return Monitor;
+      case 'flak': return Shield;
+      case 'railgun': return Radio;
+      case 'cache': return Database;
+      case 'harvester': return Bot;
+      default: return Server;
     }
   };
 

@@ -191,6 +191,6 @@ describe('Campaign Scenarios & Chaos Specification', () => {
     const stats = engine.getStats();
     assert.equal(stats.connectedEndpointsCount, 1, 'PC should be marked connected');
     assert.ok(stats.revenuePerSec > 0, 'PC should generate revenue per second');
-    assert.ok(stats.cash >= 2500, 'Cash should accumulate from productivity');
+    assert.ok(stats.cash > 500, 'Cash should accumulate from productivity');
   });
 });

@@ -1,120 +1,90 @@
-# IsoPacket: Cisco-Inspired Network Tycoon & HD-2D Homelab Visualizer
-> **Architecture Roadmap, Enterprise Invariants & Engineering Specification**
-
-IsoPacket is a production-ready, mobile-friendly **Cisco-Inspired Network Tycoon & Educational Topology Visualizer Game**. It combines classic 16-bit isometric HD-2D pixel art with a deterministic packet routing simulation engine, real-time 3D graphics (dynamic soft shadows, emissive activity LEDs, catenary drooping patch cables, instanced GPU packet streams), and actual Cisco enterprise concepts (VLAN tagging, Subnetting, Access Control Lists, Wi-Fi 6 AP coverage, and Tycoon office productivity).
+# 🌐 CYBERCORE: PROTOCOL ROGUE (Mindustry × Network Defense × Roguelite)
+> **Master Game Design, Engine Architecture & Technical Specification**
 
 ---
 
-## 1. Architectural Invariants
+## 1. Executive Summary & Vision
+CYBERCORE: PROTOCOL ROGUE combines the supply-chain logistics of *Mindustry*, the strategic spatial depth of *Tower Defense*, and the build diversity of modern *Roguelites* (such as *Balatro* and *FTL*).
 
-### 1.1 HD-2D Isometric Viewport & Visual Presentation
-- **32x32 Isometric Data Center Baseplate:** Expansive high-tech raised floor with metallic cooling vents and grounding rivets.
-- **Strict Hazard Perimeter:** Hazard yellow-and-black caution stripes are strictly constrained to the absolute outer perimeter tiles (`gx === 0 || gx === 31 || gz === 0 || gz === 31`).
-- **Retro Pixel-Art Shaders & Procedural Textures:** Zero 404 external sprite dependencies. All hardware chassis, drive caddies, RJ45 ports, and terminals are generated procedurally on offscreen HTML5 canvases using `THREE.NearestFilter` with zero mipmap blurring.
-- **Wi-Fi 6 Cellular Radio Rings:** Cisco Catalyst 9100 Access Points project a 7-tile dynamic radio coverage radius on the floor, enabling seamless wireless roaming for laptops, security cameras, and automated warehouse AGV robots.
-- **Catenary Physical Cables:** 3D catenary bezier curves with gravity-driven sag and RJ-45 boot colors (Cat6 Blue, Fiber Yellow, Security Red, Database Purple, Voice Green).
-
-### 1.2 Cisco Enterprise Concepts & Tycoon Economics
-- **Hierarchical Network Design:**
-  - **Core Layer:** WAN Fiber Gateways & Cisco Core L3 Routers.
-  - **Distribution Layer:** Cisco Catalyst L2/L3 Switches with 802.1Q trunking & Next-Gen Firewalls with stateful ACL rules.
-  - **Access & Wireless Layer:** Wi-Fi 6 APs & Structured Cat6 Cabling.
-  - **End Devices & Workloads:** Workstation PCs, Executive Laptops, Cisco VoIP IP Phones, Network Laser Printers, Smart PoE Cameras, and Autonomous AGV Robots.
-- **Connectivity & Productivity Loop:**
-  - End devices *must* maintain an active cabled or wireless route to an active ISP Gateway.
-  - While online, each endpoint produces recurring cash ($/s) based on link stability and queue latency:
-    - Autonomous Warehouse AGV Robot: **+$45/s** (IoT VLAN 30)
-    - Mobile Executive Laptop: **+$25/s** (Data VLAN 10)
-    - Office Workstation PC: **+$20/s** (Data VLAN 10)
-    - Smart Security Camera: **+$18/s** (IoT VLAN 30)
-    - NVMe Database Node: **+$15/s** (Server VLAN 50)
-    - Cisco VoIP IP Phone: **+$12/s** (Voice VLAN 20 with QoS)
-    - 1U Blade Web Server: **+$10/s** (Server VLAN 50)
-    - Network Laser Printer: **+$8/s** (Data VLAN 10)
-  - If a link drops, switch buffers overflow, or a cable is cut, workers halt and revenue drops to $0/s!
-
-### 1.3 Audio Architecture (`src/utils/AudioManager.ts`)
-- **Web Audio API Synthesizer:** Zero external audio files required. Synthesizes mechanical switch clicks, RJ45 cable connection snaps, packet drop glitch buzzers, victory arpeggio fanfares, and an ambient cyberpunk synth drone.
-- **Audio Unlock:** Cleanly unlocked on user interaction during the animated loading sequence.
-
-### 1.4 Responsive HUD & Mobile Touch Controls
-- **Fluid Multi-Touch Gestures:** Pinch-to-zoom (tracking distance between dual touch points), single-finger pan, and tap selection.
-- **Adaptive Drawer / Bottom-Sheet:** On mobile screens, the Node Inspector transforms into a slide-up bottom sheet with grab handles; on desktop, it functions as a compact side drawer.
-- **Interactive Onboarding Tutorial:** Step-by-step walkthrough explaining core routing, distribution switching, VLAN segmentation, and tycoon objectives.
+Instead of ammunition belts and conveyor loaders, defense turrets are powered by **Bandwidth & Power-over-Ethernet (PoE)** transmitted across real-time network cabling from the **Wi-Fi 7 Core Gateway** and **PoE Core Switches**. Unpowered turrets droop and shut down; properly supplied turrets blaze with data packets and fire according to the **Protocol Ammo Stream** routed through them.
 
 ---
 
-## 2. Directory Structure
-```text
-/
-├── PLAN.md                               # Architecture Roadmap & Technical Invariants
-├── README.md                             # Production GitHub & Vercel Documentation
-├── src/
-│   ├── engine/                           # Pure TypeScript deterministic packet engine
-│   │   ├── types.ts                      # Packets, Protocols, Cisco L2/L3 Node specs
-│   │   ├── SimulationEngine.ts           # Tick scheduler, routing graph, tycoon productivity
-│   │   ├── scenarioDefs.ts               # Campaign missions & starter topologies
-│   │   ├── scenarioTypes.ts              # Budget rules, SLA metrics, win conditions
-│   │   └── simulation.test.ts            # Node.js test suite for engine invariants
-│   │
-│   ├── utils/
-│   │   └── AudioManager.ts               # Synthesized Web Audio API sound effects & synth BGM
-│   │
-│   ├── state/                            # Zustand reactive state stores
-│   │   ├── useTopologyStore.ts           # 32x32 grid nodes, cables, tools, selection
-│   │   ├── useSimulationStore.ts         # Simulation clock, play/pause, stats
-│   │   └── useScenarioStore.ts           # Campaign missions, SLA tracking, chaos drawer
-│   │
-│   ├── assets/
-│   │   └── PixelTextureFactory.ts        # Procedural 16-bit pixel-art generator for all Cisco nodes
-│   │
-│   ├── components/
-│   │   ├── canvas/
-│   │   │   ├── IsometricViewport.tsx     # 32x32 Three.js canvas, touch gestures, AP rings
-│   │   │   ├── CatenaryCableSystem.ts    # Physical drooping catenary bezier cables
-│   │   │   └── InstancedPacketSystem.ts  # Instanced glowing packets & spark bursts
-│   │   │
-│   │   └── ui/
-│   │       ├── HeaderBar.tsx             # Tycoon status, Cash ($), SLA %, Speed, Audio mute
-│   │       ├── BottomToolbar.tsx         # Categorized dock (Infrastructure vs End Devices)
-│   │       ├── NodeInspector.tsx         # Mobile bottom-sheet / drawer for IP, VLAN, ACL, cables
-│   │       ├── LoadingScreen.tsx         # Cyberpunk booting sequence & progress bar
-│   │       ├── TutorialModal.tsx         # 5-step interactive Cisco onboarding tutorial
-│   │       ├── ScenarioModal.tsx         # Campaign mission briefings & victory celebrations
-│   │       ├── ChaosMonkeyDrawer.tsx     # Fault injection (cable cut, DDoS flood, server crash)
-│   │       └── HelpModal.tsx             # Keyboard shortcuts & controls guide
-│   │
-│   ├── App.tsx                           # Master application orchestrator
-│   └── main.tsx                          # Vite React entry point
-```
+## 2. Core Gameplay Pillars
+
+### 2.1 The Mindustry-Style Bandwidth & PoE Ammo Grid
+- **Bandwidth as Ammunition:**
+  - Every turret consumes bandwidth (e.g., 250 Mbps to 1000 Mbps).
+  - The Core Gateway produces master bandwidth (default 5,000 Mbps, expandable via Caches and Upgrades).
+  - Switches distribute and amplify bandwidth across connected ports.
+- **Physical Cable Links:**
+  - Cat6 and Fiber cables must connect turrets back to a PoE Switch or Gateway.
+  - If a cable is severed by an EMP or enemy contact, downstream turrets become **Starved**: their barrels droop, status LEDs glow dark red, smoke/sparks emit, and they cannot fire.
+- **Protocol Conduit System (Data Stream Types):**
+  Switches allow selecting which protocol stream is routed through their subnets:
+  1. **UDP (Green Stream):** +100% fire rate, rapid-fire bullet spray, lower per-shot damage (anti-swarm).
+  2. **TCP (Blue Stream):** Balanced fire rate, verified packet delivery, refunds +$2 cash per confirmed kill.
+  3. **TLS/HTTPS (Gold Stream):** Focused piercing beam that bypasses armored boss shields.
+  4. **ICMP (Cyan Stream):** High-impact kinetic shockwave that shoves advancing packets backward.
 
 ---
 
-## 3. Implementation Roadmap & Status
+## 3. The 8 Base Hardware Nodes & 16 Tier-3 Branching Specializations
 
-- [x] **Phase 1: Foundation & HD-2D Isometric 32x32 Engine**
-  - [x] Scaled isometric grid to 32x32 tiles.
-  - [x] Strict hazard borders confined strictly to outer boundary perimeter coordinates.
-  - [x] Procedural pixel-art texture generator for enterprise routers, switches, APs, servers, PCs, phones, printers, and AGV robots.
-- [x] **Phase 2: 3D Catenary Cables & Deterministic Packet Engine**
-  - [x] Port-to-port catenary curve physics with RJ-45 boot colors.
-  - [x] InstancedMesh GPU packet rendering with protocol-specific glows (HTTP, HTTPS, DNS, SSH, SQL, DDOS).
-  - [x] Packet drop spark explosions and FIFO buffer queue overflow protection.
-- [x] **Phase 3: Cisco Enterprise Features & Deep Inspection**
-  - [x] Interactive VLAN assignment (Data VLAN 10, Voice VLAN 20, IoT VLAN 30, Server VLAN 50).
-  - [x] Next-Gen Firewall ACL rule chain editor (`ALLOW` / `DROP`).
-  - [x] Mobile bottom-sheet inspector with grab bar and touch-friendly controls.
-- [x] **Phase 4: Campaign Scenarios & Chaos Engineering**
-  - [x] Scenario Selector modal featuring Free Homelab Sandbox + 4 structured puzzle missions:
-    1. First Homelab Setup (Unwired starter rack)
-    2. DDoS Scrubbing Center (Firewall ACL protection)
-    3. Load Balancing the Slashdot Effect (Multi-server clustering)
-    4. VLAN Database Isolation (Segmenting sensitive database tier)
-  - [x] SLA Uptime Gauge (requiring $\ge 99.0\%$ SLA for 30s) and hardware budgeting ($).
-  - [x] Chaos Monkey fault injector (Sever Cable, 100G DDoS Spike, Kernel Panic).
-- [x] **Phase 5: Cisco Tycoon Economy, Web Audio & Mobile Polish**
-  - [x] Synthesized Web Audio API sound effects (`AudioManager.ts`) and cyberpunk synth drone.
-  - [x] Animated cyberpunk booting screen with diagnostic progress bar.
-  - [x] 5-step interactive onboarding tutorial explaining Cisco concepts and tycoon loop.
-  - [x] Multi-touch pinch-to-zoom and touch pan support for mobile and tablet browsers.
-  - [x] Tycoon cash accumulation loop: connected end devices generate revenue ($/s); disconnected devices lose productivity.
+| # | Base Node | Role | Tier 3 Path A | Tier 3 Path B |
+|---|---|---|---|---|
+| 1 | **Wi-Fi 7 Core Gateway** | Central Objective & Master Power | **[Omni-Antenna]**: Broadcasts wireless power radius (no cables needed within 6 tiles) | **[Hardened Bunker]**: 2.5x Max HP & reactive radial EMP shockwave when hit |
+| 2 | **PoE Core Switch** | Bandwidth Distribution Hub | **[Overclock Hub]**: +50% fire rate and +100% throughput to directly cabled turrets | **[Tesla Conduit]**: Arcs continuous chain lightning along cables at crossing enemies |
+| 3 | **DPI Flak Cannon** | Rapid Anti-Swarm Shredder | **[Gatling Scrubber]**: Insane multi-barrel anti-swarm fire rate | **[Decryption Array]**: Strips cloaking and energy shields from armored packets |
+| 4 | **Firewall Scrubber** | Heavy Thermal Plasma Beam | **[Stateful Plasma Beam]**: Heavy thermal beam dealing stacking burning DoT | **[Air-Gapped Barricade]**: Solid physical energy barrier that blocks enemy traversal |
+| 5 | **Next-Gen IPS Railgun** | Ultra Long-Range Sniper | **[Hyper-Railgun]**: Infinite-range piercing rail that tears across full grid lines | **[Zero-Day EMP]**: Cryogenic payload that freezes bosses and groups for 3.5s |
+| 6 | **Bandwidth Proxy Cache** | Capacity Booster & Battery | **[Volatile Buffer]**: High-explosive shrapnel detonation if destroyed or triggered | **[Nanite Repair Node]**: Restores HP and shields to adjacent damaged turrets |
+| 7 | **Autonomous AGV Harvester**| Mobile Resource Gatherer | **[Combat Drone]**: Armed rover patrol engaging leaks directly | **[Magnet Harvester]**: Long-range magnetic tractor beam for instant crystal pickup |
+| 8 | **Data Mining Server Rack** | Tycoon Economy Generator | **[Crypto Miner]**: Exponential cash scaling per wave survival | **[Honeypot Trap]**: High-threat decoy beacon taunting and diverting enemy pathfinding |
+
+---
+
+## 4. 100-Wave Procedural Wave Director (`src/engine/WaveDirector.ts`)
+
+The 100 waves are structured into 5 tactical eras:
+1. **Waves 1–20 (The Local LAN Era):**
+   - Script-kiddie worms and low-density SYN flood swarms. Teaches cabling fundamentals, PoE supply, and basic flak/firewall chokepoints.
+2. **Waves 21–40 (The Botnet Surge):**
+   - Armored Ransomware tanks (disable cables on contact) and cloaked Infiltrators that phase through basic turrets unless decrypted.
+3. **Waves 41–60 (Cable Sabotage):**
+   - Atmospheric EMP surges that sever random single cable links, forcing players to build redundant ring topologies and proxy caches.
+4. **Waves 61–80 (Malware Inversion):**
+   - Bosses launch corrupted injection payloads that temporarily hack turrets to fire toward the Core until rebooted or diverted by Honeypots.
+5. **Waves 81–100+ (Nation-State Cyberwarfare):**
+   - Dual spawn rifts, colossal multi-segmented worm bosses, continuous DDoS saturation storms.
+6. **Boss Battles (Every 5th & 10th Wave):**
+   - **Zero-Day Worm:** Multi-segmented cyber-centipede that splits into 2 faster sub-worms whenever a segment is destroyed.
+   - **DDoS Botnet Colossus:** Armored behemoth with rotating orbital barrier shields and periodic ground EMP slams.
+
+---
+
+## 5. Post-Wave Roguelite Card Draft System
+At the end of each wave, the game pauses with a dramatic slow-motion blur and presents **3 Randomized Roguelite Upgrades**:
+- 🃏 **Overclocked Cat6:** *Cables deliver +50% bandwidth; turrets gain +25% range.*
+- 🃏 **BGP Anycast Routing:** *When Core Gateway is hit, 30% of damage reflects as an electrical shockwave.*
+- 🃏 **Zero-Day Payload:** *IPS Railgun hits apply a corrosive Malware Burn dealing 40 DPS over 4 seconds.*
+- 🃏 **PoE Overdrive:** *Switches periodically emit a chain-lightning arc that zaps nearby enemies.*
+- 🃏 **Automated Bot Fleet:** *Instantly spawns 2 additional AGV Harvester Bots with +50% speed and 2x vacuum radius.*
+- 🃏 **Hardware Acceleration:** *All current and future turrets gain visual Tier-2 golden armor and +20% base damage.*
+- 🃏 **Quantum Encryption:** *Core Gateway gains a regenerable 50 HP energy overshield.*
+- 🃏 **Packet Sniffer:** *TCP kills refund an additional +$4 cash bonus.*
+
+---
+
+## 6. Procedural Web Audio Engine Specification (`src/audio/SoundFX.ts`)
+- **Auto-Unlock:** Audio context unlocks seamlessly on the very first user click, tap, or touch event on `window`.
+- **Procedural BGM:** 120-BPM driving synthesizer bassline with dual detuned saw oscillators and a resonant biquad lowpass filter. Cutoff dynamically scales from 450Hz to 3200Hz as wave intensity peaks.
+- **Combat & Mechanical SFX:**
+  - Turret rotation servo hum
+  - Flak cannon twin-burst (`playFlakBurst`)
+  - Railgun hypersonic crack (`playRailgunCrack`)
+  - Plasma laser thermal hiss (`playPlasmaLaser`)
+  - Packet explosion crunch & boss death detonation
+  - Boss arrival klaxon siren
+  - Roguelite card draft fanfare
+  - In-HUD volume slider and instant mute toggle

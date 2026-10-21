@@ -381,7 +381,14 @@ export class SimulationEngine {
 
     for (const node of this.nodes.values()) {
       const def = HARDWARE_DEFS[node.type];
-      const isEndpoint = def.category === 'end_device' || node.type === 'server' || node.type === 'database';
+      const isEndpoint =
+        def.category === 'economy' ||
+        node.type === 'server' ||
+        node.type === 'database' ||
+        node.type === 'pc' ||
+        node.type === 'laptop' ||
+        node.type === 'robot' ||
+        node.type === 'client';
 
       if (!isEndpoint) continue;
       totalWorkers++;

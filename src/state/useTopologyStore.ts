@@ -515,7 +515,7 @@ export const useTopologyStore = create<TopologyState>((set, get) => {
         return null;
       }
 
-      AudioManager.playSnap();
+      AudioManager.playWireSnap();
 
       // Find available or default port
       const portA = nodeA.ports[0]?.id || `port_${fromNodeId}_0`;

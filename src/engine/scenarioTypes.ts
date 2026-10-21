@@ -42,4 +42,8 @@ export const HARDWARE_COSTS: Record<HardwareNodeType | 'cable', number> = {
   robot: 320,
   client: 120,
   cable: 25,
+  flak: 420,
+  railgun: 650,
+  cache: 380,
+  harvester: 320,
 };
